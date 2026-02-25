@@ -13,9 +13,7 @@ loginBtn.addEventListener('click', () => {
 });
 
 
-// ================= REGISTER =================
-
-// Register
+// REGISTER 
 const registerForm = document.getElementById("registerForm");
 
 registerForm.addEventListener("submit", async (e) => {
@@ -24,7 +22,10 @@ registerForm.addEventListener("submit", async (e) => {
     const name = document.getElementById("register-name").value;
     const role = document.getElementById("register-role").value;
     const password = document.getElementById("register-password").value;
-
+  if(password.length < 8) {
+        alert("Password must be at least 8 characters long.");
+        return;
+    }
     try {
         const res = await fetch(`${BASE_URL}/register`, {
             method: "POST",
@@ -33,11 +34,11 @@ registerForm.addEventListener("submit", async (e) => {
         });
         const data = await res.json();
 
-        if(data.user) {
-            alert(`User Registered: ${data.user.name} (${data.user.role})`);
+       if(data.name && data.role) {
+    alert(`User Registered: ${data.name} (${data.role})`);
             registerForm.reset();
         } else {
-            alert(data.message);
+            alert(data.message || "Registration failed.");
         }
     } catch (err) {
         alert("Error: " + err.message);
@@ -46,7 +47,7 @@ registerForm.addEventListener("submit", async (e) => {
 
 
 
-// ================= LOGIN =================
+// LOGIN 
 
 const loginForm = document.getElementById("loginForm");
 
@@ -71,7 +72,6 @@ loginForm.addEventListener("submit", async (e) => {
         if (res.ok) {
             console.log(data.user);
 
-            // تقدر تروح صفحة حسب الدور هنا
             if (data.user.role === "student") {
                 window.location.href = "student.html";
             } else if (data.user.role === "teacher") {
