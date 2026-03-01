@@ -21,6 +21,7 @@ registerForm.addEventListener("submit", async (e) => {
 
     const name = document.getElementById("register-name").value;
     const role = document.getElementById("register-role").value;
+    const email = document.getElementById("register-email").value;
     const password = document.getElementById("register-password").value;
   if(password.length < 8) {
         alert("Password must be at least 8 characters long.");
@@ -30,11 +31,11 @@ registerForm.addEventListener("submit", async (e) => {
         const res = await fetch(`${BASE_URL}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, role, password })
+            body: JSON.stringify({ name, email,role, password })
         });
         const data = await res.json();
 
-       if(data.name && data.role) {
+       if(data.email && data.name && data.role) {
     alert(`User Registered: ${data.name} (${data.role})`);
             registerForm.reset();
         } else {
@@ -54,7 +55,7 @@ const loginForm = document.getElementById("loginForm");
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const name = document.getElementById("loginName").value;
+    const email = document.getElementById("login-email").value;
    const password = document.getElementById("loginPassword").value;
 
     try {
@@ -63,12 +64,11 @@ loginForm.addEventListener("submit", async (e) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ name, password })
+            body: JSON.stringify({ email, password })
         });
 
         const data = await res.json();
         alert(data.message);
-
         if (res.ok) {
             console.log(data.user);
 
@@ -76,12 +76,16 @@ loginForm.addEventListener("submit", async (e) => {
                 window.location.href = "student.html";
             } else if (data.user.role === "teacher") {
                 window.location.href = "teacher.html";
-            } else {
+            
+            } else if (data.user.role === "worker") {
                 window.location.href = "worker.html";
+            } else {
+                alert("");
             }
         }
 
     } catch (error) {
+           console.log("Full Error:", error);
         alert("Login Error");
         console.log(error);
     }

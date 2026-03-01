@@ -5,8 +5,8 @@ const bcrypt = require("bcrypt");
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { name,  password, role } = req.body;
-    const existingUser = await User.findOne({ name });
+    const { name,  password,email, role } = req.body;
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -14,6 +14,7 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = await User.create({
       name,
+      email,
       password: hashedPassword,
       role,
     });
@@ -24,10 +25,10 @@ router.post("/register", async (req, res) => {
 });
 //login
 router.post("/login", async (req, res) => {
-  const { name, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ name });
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
