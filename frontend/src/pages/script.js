@@ -65,23 +65,20 @@ loginForm.addEventListener("submit", async (e) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ email, password })
+        
         });
-
         const data = await res.json();
         alert(data.message);
         if (res.ok) {
-            console.log(data.user);
+            localStorage.setItem("user", JSON.stringify(
+                { email: data.user?.email || data.email,
+        name: data.user?.name || data.name,
+        role: data.user?.role || data.role
+    }
+            ));
 
-            if (data.user.role === "student") {
-                window.location.href = "student.html";
-            } else if (data.user.role === "teacher") {
-                window.location.href = "teacher.html";
-            
-            } else if (data.user.role === "worker") {
-                window.location.href = "worker.html";
-            } else {
-                alert("");
-            }
+    window.location.href = "Dashboard.html";
+
         }
 
     } catch (error) {

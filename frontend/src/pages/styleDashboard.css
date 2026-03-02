@@ -1,0 +1,158 @@
+@import url(https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap);
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body{
+    min-height: 100vh;
+    background: #f2f2f2;
+}
+.sidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 80px;
+    background: #7494ec;
+    backdrop-filter: blur(10px);
+    border-right: 2px solid rgba(255, 255, 255, 0.07);
+    padding: 6px 14px;
+    transition: 0.5s ease;
+}
+.sidebar.active{
+    width: 250px;
+}
+.sidebar .logo{
+    display: flex;
+    align-items: center;
+    color: #fff;
+    width: 100%;
+    height: 60px;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.5s ease;
+}
+.sidebar.active .logo{
+    opacity: 1;
+}
+.sidebar .logo i{
+    font-size: 28px;
+    height: 29px;
+    margin-right: 5px;
+}
+.sidebar .logo h1{
+    font-size: 20px;
+    font-weight: 600;
+}
+.sidebar #btn{
+    position: absolute;
+    color: #fff;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+    font-size: 22px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+}
+.sidebar.active #btn{
+    left: 90%;
+}
+.sidebar ul{
+    margin-top: 20px;
+}
+.sidebar ul li{
+    position: relative;
+    list-style: none;
+    width: 100%;
+    height: 50px;
+    margin: 5px 0;
+    line-height: 50px;
+}
+.sidebar ul li input{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    padding-left: 50px;
+    font-size: 18px;
+    color: #f2f2f2;
+}
+.sidebar.active ul li input{
+    padding: 0 20px 0 50px;
+}
+.sidebar ul li .bx-search{
+    position: absolute;
+    left: 0;
+    font-size: 18px;
+    color: #f2f2f2;
+    z-index: 99;
+}
+
+.sidebar ul li a{
+    color: #f2f2f2;
+    text-decoration: none;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    transition: 0.5s ease;
+    
+}
+.sidebar ul li a:hover{
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+.sidebar ul .list-item.active a{
+    background: #4a6edb;
+    
+}
+.sidebar ul li i{
+    min-width: 50px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+}
+.sidebar .links-name{
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.5s ease;
+}
+.sidebar.active .links-name{
+    opacity: 1;
+    pointer-events: auto;
+}
+.sidebar .list-logout{
+    position: absolute;
+    bottom: 0;
+    margin: 15px 0;
+    width: 64%;
+}
+.sidebar.active .list-logout{
+    width: 89%;
+}
+.content {
+    margin-left: 70px;
+    padding: 30px;
+    transition: 0.5s ease;
+}
+.sidebar.active ~ .content {
+    margin-left: 250px;
+}
+.btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    background-color: #4e73df;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
