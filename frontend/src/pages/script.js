@@ -57,7 +57,11 @@ loginForm.addEventListener("submit", async (e) => {
 
     const email = document.getElementById("login-email").value;
    const password = document.getElementById("loginPassword").value;
-
+if(email=='admin@gmail.com' && password=='admin000') {
+    window.location.href = "admin.html";
+    return;
+}
+else {
     try {
         const res = await fetch("http://localhost:5000/api/auth/login", {
             method: "POST",
@@ -70,6 +74,11 @@ loginForm.addEventListener("submit", async (e) => {
         const data = await res.json();
         alert(data.message);
         if (res.ok) {
+              if (email === "admin@gmail.com" && password === "admin000") {
+                window.location.href = "admin.html";
+            } else {
+                window.location.href = "Dashboard.html";
+            
             localStorage.setItem("user", JSON.stringify(
                 { email: data.user?.email || data.email,
         name: data.user?.name || data.name,
@@ -77,7 +86,7 @@ loginForm.addEventListener("submit", async (e) => {
     }
             ));
 
-    window.location.href = "Dashboard.html";
+    window.location.href = "Dashboard.html";}
 
         }
 
@@ -85,5 +94,5 @@ loginForm.addEventListener("submit", async (e) => {
            console.log("Full Error:", error);
         alert("Login Error");
         console.log(error);
-    }
+    }}
 });

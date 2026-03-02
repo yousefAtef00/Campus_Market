@@ -1,6 +1,7 @@
 const resetForm = document.getElementById("resetForm");
 const welcome = document.createElement("h3");
-document.body.insertBefore(welcome, resetForm);
+const container = document.querySelector(".form-container");
+container.insertBefore(welcome, resetForm);
 
 
 const user = JSON.parse(localStorage.getItem("user") || "{}");

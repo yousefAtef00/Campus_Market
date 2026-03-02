@@ -9,8 +9,34 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styleDashboard.css">
 </head>
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <h3>Add Product</h3>
+
+        <input type="text" id="productName" placeholder="Product Name" required>
+        
+        <textarea id="productDesc" placeholder="Product Description" required></textarea>
+        
+        <input type="number" id="productPrice" placeholder="Product Price" required min="1">
+        
+        <input type="file" id="productImage" accept="image/*" required>
+
+        <button class="btn" onclick="saveProduct()">Save</button>
+        <button class="btn reject-btn" onclick="closeModal()">Cancel</button>
+    </div>
+</div>
+
 <body>
     <h2 id="welcome"></h2>
+   <style>
+#welcome{
+    font-size: 24px;
+    color: #333;
+    margin: 0 auto;
+    text-align: center;
+}
+</style>
+
     <div class="sidebar">
         <div class="logo-content">
             <div class="logo">

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background:#f2f2f2; font-family:'Poppins', sans-serif;">
+
+<h2 style="padding:20px">Admin - Products Approval</h2>
+<div id="admin-orders"></div>
+
+<script>
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+function renderAdmin() {
+
+    let container = document.getElementById("admin-orders");
+    container.innerHTML = "";
+
+    products.forEach((product, index) => {
+
+        if (product.status === "Pending") {
+
+            container.innerHTML += `
+            <div class="admin-card">
+                <h3>${product.name}</h3>
+                <p>${product.desc}</p>
+                <p><strong>Price:</strong> ${product.price}</p>
+
+                <div class="admin-actions">
+                    <button class="btn approve-btn" onclick="approve(${index})">Approve</button>
+                    <button class="btn reject-btn" onclick="reject(${index})">Reject</button>
+                </div>
+            </div>
+            `;
+        }
+    });
+}
+
+function approve(index) {
+    products[index].status = "Approved";
+    localStorage.setItem("products", JSON.stringify(products));
+    renderAdmin();
+}
+
+function reject(index) {
+    products[index].status = "Rejected";
+    localStorage.setItem("products", JSON.stringify(products));
+    renderAdmin();
+}
+
+renderAdmin();
+
+</script>
+
+</body>
+</html>
