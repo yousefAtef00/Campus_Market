@@ -1,3 +1,4 @@
+////npx expo start --tunnel
 import React, { useRef, useState } from "react";
 import {
   View,
@@ -50,7 +51,7 @@ export default function App() {
       return;
     }
 
-    fetch("http://192.168.1.4:5000/api/auth/resetPassword", {
+    fetch("http://172.25.14.24:5000/api/auth/resetPassword", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: loggedEmail, newPassword }),
@@ -146,7 +147,7 @@ export default function App() {
 
   // LOGIN API
   const handleLogin = () => {
-    fetch("http://192.168.1.4:5000/api/auth/login", {
+    fetch("http://172.25.14.24:5000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -169,9 +170,9 @@ export default function App() {
 
   // REGISTER API
   const handleRegister = () => {
-    fetch("http://192.168.1.4:5000/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    fetch("http://172.25.14.24:5000/api/auth/register", {
+    method: "POST",
+     headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: regUsername, email: regEmail, password: regPassword, role }),
     })
       .then((res) => res.json())
@@ -180,13 +181,13 @@ export default function App() {
       })
       .catch((err) => console.log(err));
   };
-
-  // FORGOT PASSWORD
+ //
+ // FORGOT PASSWORD//172.25.32.62
   const handleForgot = () => {
-    fetch("http://192.168.1.4:5000/api/auth/forgetPassword", {
+    fetch("http://172.25.14.24:5000/api/auth/forgetPassword", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: forgotEmail, name: forgotName, newPassword }),
+     body: JSON.stringify({ email: forgotEmail, name: forgotName, newPassword }),
     })
       .then((res) => res.json())
       .then((data) => Alert.alert("Forgot Password", data.message || "Password reset!"))

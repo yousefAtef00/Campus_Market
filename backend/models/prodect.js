@@ -19,7 +19,26 @@ image: {
       type: String,
       required: true,
     },
+      status: {
+      type: String,
+      required: true,
+    },
+    ownerEmail: {
+      type: String,
+      required: true,
+    },
+    category: {
+  type: String,
+  required: true,
+},
+ isbuyer: {
+      type: Boolean,
+      default: false,
+    },
+
+
   },
+  
   { timestamps: true }
 );
 
