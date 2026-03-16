@@ -10,7 +10,7 @@ function Dashboard({ user }) {
     const fetchProducts = async () => {
       setLoading(true);
       const data = await productsAPI.getAll();
-      // ✅ Approved بس
+    
       setProducts(data.filter((p) => p.status === "Approved"));
       setLoading(false);
     };

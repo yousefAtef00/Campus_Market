@@ -55,7 +55,7 @@ function Products({ user }) {
             products={products}
             setProducts={setProducts}
             user={user}
-            onEdit={(product) => { setEditProduct(product); setOpen(true); }} // ✅ فتح Modal للتعديل
+            onEdit={(product) => { setEditProduct(product); setOpen(true); }} 
           />
         ))}
       </div>
@@ -65,7 +65,7 @@ function Products({ user }) {
           products={products}
           setProducts={setProducts}
           user={user}
-          editProduct={editProduct} // ✅ بنبعت المنتج اللي هيتعدل
+          editProduct={editProduct} 
         />
       )}
     </div>

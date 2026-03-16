@@ -189,7 +189,7 @@ const cssStyles = `
   }
 `;
 
-// ✅ setShowForget بتيجي من AuthForm مش من جوا LoginForm
+
 function LoginForm({ onLogin, setShowForget }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -296,12 +296,11 @@ function RegisterForm() {
   );
 }
 
-// ✅ showForget و setShowForget هنا في AuthForm
 export default function AuthForm({ onLogin }) {
   const [isActive, setIsActive] = useState(false);
   const [showForget, setShowForget] = useState(false);
 
-  // ✅ لو showForget = true ورّي صفحة Forget بدل Login/Register
+  
   if (showForget) {
     return <Forget onBack={() => setShowForget(false)} />;
   }
@@ -311,7 +310,7 @@ export default function AuthForm({ onLogin }) {
       <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
       <style>{cssStyles}</style>
       <div className={`container ${isActive ? "active" : ""}`}>
-        {/* ✅ بنمرر setShowForget لـ LoginForm عشان لما يضغط Forgot Password يغيرها */}
+    
         <LoginForm onLogin={onLogin} setShowForget={setShowForget} />
         <RegisterForm />
         <div className="toggle-box">

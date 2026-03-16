@@ -158,7 +158,7 @@ const togglePermission = async (userId, permission, currentValue) => {
 
       <div className="admin-card">
         <div className="admin-nav">
-          {/* ✅ بيظهر بس لو عنده permission */}
+         
           {user.canApprovedOrRefuseProducts && (
             <button
               className={`nav-btn ${activeTab === "pending" ? "active" : ""}`}
@@ -198,7 +198,7 @@ const togglePermission = async (userId, permission, currentValue) => {
 
         <div className="admin-content">
 
-          {/* Pending Products */}
+       
           {activeTab === "pending" && user.canApprovedOrRefuseProducts && (
             <>
               <h2>Products Awaiting Approval</h2>

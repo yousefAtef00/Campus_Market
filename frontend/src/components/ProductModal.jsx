@@ -10,7 +10,7 @@ const defaultCategories = [
 ];
 
 function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
-  // ✅ لو editProduct موجود، بنملي البيانات بتاعته
+ 
   const [name, setName] = useState(editProduct?.name || "");
   const [description, setDescription] = useState(editProduct?.description || "");
   const [price, setPrice] = useState(editProduct?.price || "");
@@ -26,7 +26,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
     setLoading(true);
 
     if (editProduct) {
-      // ✅ تعديل منتج موجود
+  
       const res = await productsAPI.update(editProduct._id, {
         name,
         description,
@@ -42,7 +42,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
         alert("Failed to update product");
       }
     } else {
-      // ✅ إضافة منتج جديد
+     
       const product = {
         name,
         description,
@@ -67,7 +67,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
   return (
     <div className="modal" style={{ display: "flex" }}>
       <div className="modal-content">
-        {/* ✅ العنوان بيتغير حسب Add أو Edit */}
+
         <h3>{editProduct ? "Edit Product" : "Add Product"}</h3>
         <input
           placeholder="Name"
