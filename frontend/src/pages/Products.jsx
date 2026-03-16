@@ -10,8 +10,8 @@ function Products({ user }) {
   const [selected, setSelected] = useState("All");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editProduct, setEditProduct] = useState(null); // ✅ المنتج اللي هيتعدل
 
-  
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -20,8 +20,6 @@ function Products({ user }) {
           ? await productsAPI.getAll()
           : await productsAPI.getByEmail(user.email);
       setProducts(data);
-
-      
       const cats = [...new Set(data.map((p) => p.category))];
       setCategories(cats);
       setLoading(false);
@@ -44,28 +42,30 @@ function Products({ user }) {
         selected={selected}
         setSelected={setSelected}
       />
-    {user.role !== "admin" && (
-  <button className="btn" onClick={() => setOpen(true)}>
-    Add Product
-  </button>
-)}
+      {user.role !== "admin" && (
+        <button className="btn" onClick={() => { setEditProduct(null); setOpen(true); }}>
+          Add Product
+        </button>
+      )}
       <div className="products-grid">
         {filtered.map((p) => (
           <ProductCard
-            key={p._id}         
+            key={p._id}
             product={p}
             products={products}
             setProducts={setProducts}
+            user={user}
+            onEdit={(product) => { setEditProduct(product); setOpen(true); }} // ✅ فتح Modal للتعديل
           />
         ))}
       </div>
       {open && (
         <ProductModal
-          setOpen={setOpen}
+          setOpen={() => { setOpen(false); setEditProduct(null); }}
           products={products}
           setProducts={setProducts}
-          categories={categories}
           user={user}
+          editProduct={editProduct} // ✅ بنبعت المنتج اللي هيتعدل
         />
       )}
     </div>

@@ -21,6 +21,17 @@ email: {
       enum: ["student", "teacher", "worker"],
       required: true,
     },
+    canGivePermisionToUser: {
+      type: Boolean,
+      default: false,
+    },
+    canApprovedOrRefuseProducts: { type: Boolean,
+      default: false,
+    },
+    canShowAllUsersDetails: {
+    type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authAPI } from "../api";
+import Forget from "./Forget";
 
 const cssStyles = `
   * {
@@ -188,7 +189,8 @@ const cssStyles = `
   }
 `;
 
-function LoginForm({ onLogin }) {
+// ✅ setShowForget بتيجي من AuthForm مش من جوا LoginForm
+function LoginForm({ onLogin, setShowForget }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -213,22 +215,21 @@ function LoginForm({ onLogin }) {
         <h1>Login</h1>
         {error && <p style={{ color: "red", fontSize: 13, textAlign: "center" }}>{error}</p>}
         <div className="input-box">
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)} />
           <i className="bx bxs-envelope"></i>
         </div>
         <div className="input-box">
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)} />
           <i className="bx bxs-lock-alt"></i>
+        </div>
+        <div style={{ textAlign: "right", margin: "-10px 0 15px" }}>
+          <a
+            href="#"
+            style={{ color: "#fff", fontSize: 14 }}
+            onClick={(e) => { e.preventDefault(); setShowForget(true); }}
+          >
+            Forgot Password?
+          </a>
         </div>
         <button type="submit" className="btn" disabled={loading}>
           {loading ? "Loading..." : "Login"}
@@ -268,21 +269,11 @@ function RegisterForm() {
         {error && <p style={{ color: "red", fontSize: 13, textAlign: "center" }}>{error}</p>}
         {success && <p style={{ color: "lightgreen", fontSize: 13, textAlign: "center" }}>{success}</p>}
         <div className="input-box">
-          <input
-            type="text"
-            placeholder="Username"
-            required
-            onChange={(e) => setName(e.target.value)}
-          />
+          <input type="text" placeholder="Username" required onChange={(e) => setName(e.target.value)} />
           <i className="bx bxs-user"></i>
         </div>
         <div className="input-box">
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)} />
           <i className="bx bxs-envelope"></i>
         </div>
         <div className="select-box">
@@ -294,12 +285,7 @@ function RegisterForm() {
           </select>
         </div>
         <div className="input-box">
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)} />
           <i className="bx bxs-lock-alt"></i>
         </div>
         <button type="submit" className="btn" disabled={loading}>
@@ -310,15 +296,23 @@ function RegisterForm() {
   );
 }
 
+// ✅ showForget و setShowForget هنا في AuthForm
 export default function AuthForm({ onLogin }) {
   const [isActive, setIsActive] = useState(false);
+  const [showForget, setShowForget] = useState(false);
+
+  // ✅ لو showForget = true ورّي صفحة Forget بدل Login/Register
+  if (showForget) {
+    return <Forget onBack={() => setShowForget(false)} />;
+  }
 
   return (
     <div className="main-wrapper">
       <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
       <style>{cssStyles}</style>
       <div className={`container ${isActive ? "active" : ""}`}>
-        <LoginForm onLogin={onLogin} />
+        {/* ✅ بنمرر setShowForget لـ LoginForm عشان لما يضغط Forgot Password يغيرها */}
+        <LoginForm onLogin={onLogin} setShowForget={setShowForget} />
         <RegisterForm />
         <div className="toggle-box">
           <div className="toggle-panel toggle-left">
