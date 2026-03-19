@@ -5,9 +5,10 @@
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
-body{
+body {
     min-height: 100vh;
-    background: #f2f2f2;
+    background: #081b29;
+    color: #fff;
 }
 .sidebar{
     position: fixed;
@@ -139,8 +140,9 @@ body{
     width: 89%;
 }
 .content {
-    margin-left: 70px;
+    margin-left: 250px;
     padding: 30px;
+    min-height: 100vh;
     transition: 0.5s ease;
 }
 .sidebar.active ~ .content {
@@ -150,11 +152,18 @@ body{
     padding: 10px 20px;
     margin: 10px;
     border: none;
-    background-color: #4e73df;
-    color: white;
-    border-radius: 8px;
+    background-color: #00abf0;
+    color: #fff;
+    border-radius: 40px;
     cursor: pointer;
+    transition: 0.3s;
 }
+
+.btn:hover {
+    background-color: #0081b5;
+    box-shadow: 0 0 15px #00abf0;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -209,15 +218,22 @@ body{
 
 /* Admin Cards */
 
-.admin-card {
-    background: #ffffff;
-    padding: 20px;
-    margin: 20px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: 0.3s ease;
+.admin-wrapper {
+  font-family: Poppins, sans-serif;
+  background: transparent;
+  min-height: 100vh;
+  padding: 0;
 }
 
+.admin-card {
+  max-width: 1000px;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #00abf0;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 171, 240, 0.2);
+  overflow: hidden;
+}
 .admin-card:hover {
     transform: translateY(-5px);
 }
@@ -252,4 +268,49 @@ body{
 
 .reject-btn:hover {
     background-color: #c0392b;
+}
+.page-card { 
+  background: rgba(255, 255, 255, 0.05); 
+  border: 2px solid #00abf0; 
+  border-radius: 15px; 
+  padding: 30px; 
+  box-shadow: 0 0 20px rgba(0, 171, 240, 0.2); 
+}
+.product-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #00abf0;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 10px;
+    box-shadow: 0 0 10px rgba(0, 171, 240, 0.2);
+    overflow: hidden;
+    transition: 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 171, 240, 0.4);
+}
+
+.product-card h3 {
+    color: #00abf0;
+    margin-bottom: 8px;
+}
+
+.product-card p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+th, td {
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
 }

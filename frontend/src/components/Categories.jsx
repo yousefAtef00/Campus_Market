@@ -3,7 +3,7 @@ function Categories({ categories, selected, setSelected }) {
     <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
       <button
         className="btn"
-        style={{ background: selected === "All" ? "#4e73df" : "#aaa" }}
+        style={{ background: selected === "All" ? "#00abf0" : "rgba(255,255,255,0.1)", color: "#fff" }}
         onClick={() => setSelected("All")}
       >
         All
@@ -12,7 +12,7 @@ function Categories({ categories, selected, setSelected }) {
         <button
           key={i}
           className="btn"
-          style={{ background: selected === c ? "#4e73df" : "#aaa" }}
+          style={{ background: selected === c ? "#00abf0" : "rgba(255,255,255,0.1)", color: "#fff" }}
           onClick={() => setSelected(c)}
         >
           {c}
