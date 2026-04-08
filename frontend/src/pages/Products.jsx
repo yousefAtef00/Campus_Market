@@ -10,7 +10,7 @@ function Products({ user }) {
   const [selected, setSelected] = useState("All");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [editProduct, setEditProduct] = useState(null); // ✅ المنتج اللي هيتعدل
+  const [editProduct, setEditProduct] = useState(null); 
 
   useEffect(() => {
     const fetchProducts = async () => {

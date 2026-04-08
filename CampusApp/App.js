@@ -1,11 +1,11 @@
-////npx expo start --offline
+//npx expo start --offline --clear
 //ngrok http --domain=curdy-nonputrescent-kerrie.ngrok-free.dev 5000
 //https://curdy-nonputrescent-kerrie.ngrok-free.dev/api
 import React, { useState, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Animated, Dimensions, Alert, ScrollView,
-  Modal, Image, ActivityIndicator, Platform
+  Modal, Image, ActivityIndicator
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,8 +13,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 const BASE_URL = "https://curdy-nonputrescent-kerrie.ngrok-free.dev/api";
+const ROOT_ADMIN_EMAIL = "0@gmail.com"; 
 
-// API 
+//API 
 const authAPI = {
   login: (data) =>
     fetch(`${BASE_URL}/auth/login`, {
@@ -82,7 +83,12 @@ const productsAPI = {
     }).then((r) => r.json()),
 };
 
-//AUTH SCREEN
+// permissions
+const hasPermission = (user, permission) => {
+  return user?.permissions?.includes(permission) || false;
+};
+
+//  AUTH SCREEN
 function AuthScreen({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [anim] = useState(new Animated.Value(0));
@@ -156,7 +162,6 @@ function AuthScreen({ onLogin }) {
   return (
     <View style={styles.container}>
       <Text style={styles.appTitle}>SWAPSTER</Text>
-
       <View style={styles.switchContainer}>
         <TouchableOpacity onPress={() => !isLogin && toggle()}>
           <Text style={[styles.switchText, isLogin && styles.active]}>Login</Text>
@@ -165,11 +170,8 @@ function AuthScreen({ onLogin }) {
           <Text style={[styles.switchText, !isLogin && styles.active]}>Register</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.overflowWrapper}>
         <Animated.View style={[styles.formContainer, { transform: [{ translateX }] }]}>
-
-          {/* Login Form */}
           <View style={styles.form}>
             <TextInput placeholder="Email" placeholderTextColor="#94a3b8" style={styles.input}
               onChangeText={setLoginEmail} value={loginEmail} keyboardType="email-address" autoCapitalize="none" />
@@ -182,8 +184,6 @@ function AuthScreen({ onLogin }) {
               {loginLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
             </TouchableOpacity>
           </View>
-
-          {/* Register Form */}
           <View style={styles.form}>
             <TextInput placeholder="Name" placeholderTextColor="#94a3b8" style={styles.input}
               onChangeText={setRegName} value={regName} />
@@ -198,14 +198,13 @@ function AuthScreen({ onLogin }) {
               {regLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Register</Text>}
             </TouchableOpacity>
           </View>
-
         </Animated.View>
       </View>
     </View>
   );
 }
 
-//FORGET PASSWORD SCREEN
+// FORGET PASSWORD 
 function ForgetPasswordScreen({ onBack }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -250,7 +249,7 @@ function ForgetPasswordScreen({ onBack }) {
   );
 }
 
-//DASHBOARD SCREEN
+// DASHBOARD
 function DashboardScreen({ user, setPage }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -281,13 +280,21 @@ function DashboardScreen({ user, setPage }) {
     }
   };
 
+
+  const isAdmin =
+    hasPermission(user, "canGivePermissionToUser") ||
+    hasPermission(user, "canApproveOrRejectProducts") ||
+    hasPermission(user, "canShowAllUsersDetails") ||
+    hasPermission(user, "canDeleteApprovedProduct");
+
   if (loading) return <ActivityIndicator color="#38bdf8" style={{ flex: 1 }} />;
 
   return (
     <ScrollView style={styles.screen}>
       <View style={styles.dashHeader}>
         <Text style={styles.welcomeText}>Welcome, {user.name}! 👋</Text>
-        {(user.canGivePermisionToUser || user.canApprovedOrRefuseProducts || user.canShowAllUsersDetails) && (
+    
+        {isAdmin && (
           <TouchableOpacity style={styles.adminBtn} onPress={() => setPage("admin")}>
             <Text style={styles.adminBtnText}>Admin Panel</Text>
           </TouchableOpacity>
@@ -295,18 +302,11 @@ function DashboardScreen({ user, setPage }) {
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryBar}>
-        <TouchableOpacity
-          style={[styles.categoryBtn, selected === "All" && styles.categoryBtnActive]}
-          onPress={() => setSelected("All")}
-        >
+        <TouchableOpacity style={[styles.categoryBtn, selected === "All" && styles.categoryBtnActive]} onPress={() => setSelected("All")}>
           <Text style={styles.categoryBtnText}>All</Text>
         </TouchableOpacity>
         {categories.map((c, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[styles.categoryBtn, selected === c && styles.categoryBtnActive]}
-            onPress={() => setSelected(c)}
-          >
+          <TouchableOpacity key={i} style={[styles.categoryBtn, selected === c && styles.categoryBtnActive]} onPress={() => setSelected(c)}>
             <Text style={styles.categoryBtnText}>{c}</Text>
           </TouchableOpacity>
         ))}
@@ -318,9 +318,7 @@ function DashboardScreen({ user, setPage }) {
       ) : (
         filtered.map((p) => (
           <View key={p._id} style={styles.productCard}>
-            {p.image ? (
-              <Image source={{ uri: p.image }} style={styles.productImage} />
-            ) : null}
+            {p.image ? <Image source={{ uri: p.image }} style={styles.productImage} /> : null}
             <View style={styles.productInfo}>
               <Text style={styles.productName}>{p.name}</Text>
               <Text style={styles.productDesc}>{p.description}</Text>
@@ -329,6 +327,7 @@ function DashboardScreen({ user, setPage }) {
               <Text style={[styles.productStatus, { color: p.isbuyer ? "#ef4444" : "#22c55e" }]}>
                 {p.isbuyer ? "Sold Out" : "Available"}
               </Text>
+              {/* ✅ Buy بيظهر بس لو مش صاحبه ومش اتباع */}
               {p.ownerEmail !== user.email && !p.isbuyer && (
                 <TouchableOpacity style={styles.buyBtn} onPress={() => buyProduct(p._id)}>
                   <Text style={styles.buyBtnText}>Buy</Text>
@@ -342,7 +341,7 @@ function DashboardScreen({ user, setPage }) {
   );
 }
 
-// PRODUCTS SCREEN 
+//PRODUCTS
 function ProductsScreen({ user }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -364,9 +363,7 @@ function ProductsScreen({ user }) {
     { label: "Other", value: "Other" },
   ];
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -382,6 +379,11 @@ function ProductsScreen({ user }) {
   };
 
   const openEdit = (product) => {
+
+    if (product.status !== "Pending") {
+      Alert.alert("Error", "Cannot edit approved or rejected product");
+      return;
+    }
     setEditProduct(product);
     setName(product.name); setDescription(product.description);
     setPrice(String(product.price)); setCategory(product.category); setImage(product.image);
@@ -400,7 +402,7 @@ function ProductsScreen({ user }) {
         setProducts(products.map((p) => p._id === res._id ? res : p));
         setModalOpen(false);
       } else {
-        Alert.alert("Error", "Failed to update product");
+        Alert.alert("Error", res.message || "Failed to update product");
       }
     } else {
       const res = await productsAPI.create({ name, description, price: Number(price), category, image, status: "Pending", ownerEmail: user.email, isbuyer: false });
@@ -435,7 +437,6 @@ function ProductsScreen({ user }) {
       <TouchableOpacity style={styles.addBtn} onPress={openAdd}>
         <Text style={styles.addBtnText}>+ Add Product</Text>
       </TouchableOpacity>
-
       <ScrollView>
         {products.length === 0 ? (
           <Text style={styles.emptyText}>No products yet</Text>
@@ -452,9 +453,12 @@ function ProductsScreen({ user }) {
                   Status: {p.status}
                 </Text>
                 <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                  <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(p)}>
-                    <Text style={styles.editBtnText}>Edit</Text>
-                  </TouchableOpacity>
+                
+                  {p.status === "Pending" && (
+                    <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(p)}>
+                      <Text style={styles.editBtnText}>Edit</Text>
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteProduct(p._id)}>
                     <Text style={styles.deleteBtnText}>Delete</Text>
                   </TouchableOpacity>
@@ -489,7 +493,7 @@ function ProductsScreen({ user }) {
   );
 }
 
-//SETTINGS SCREEN
+//  SETTINGS 
 function SettingsScreen({ user }) {
   const [showReset, setShowReset] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -525,11 +529,9 @@ function SettingsScreen({ user }) {
         <Text style={styles.settingsLabel}>Email: {user.email}</Text>
         <Text style={styles.settingsLabel}>Role: {user.role}</Text>
       </View>
-
       <TouchableOpacity style={styles.addBtn} onPress={() => setShowReset(!showReset)}>
         <Text style={styles.addBtnText}>Reset Password</Text>
       </TouchableOpacity>
-
       {showReset && (
         <View style={styles.settingsCard}>
           <TextInput placeholder="New Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} value={newPassword} onChangeText={setNewPassword} />
@@ -543,9 +545,14 @@ function SettingsScreen({ user }) {
   );
 }
 
-//ADMIN SCREEN
+//ADMIN 
 function AdminScreen({ user }) {
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (hasPermission(user, "canApproveOrRejectProducts")) return "pending";
+    if (hasPermission(user, "canShowAllUsersDetails")) return "users";
+    if (hasPermission(user, "canGivePermissionToUser")) return "permissions";
+    return "pending";
+  });
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -577,14 +584,19 @@ function AdminScreen({ user }) {
     setProducts(products.filter((p) => p._id !== id));
   };
 
-  const togglePermission = async (userId, permission, currentValue) => {
+  const togglePermission = async (userId, permission, hasIt) => {
     if (userId === user.id) {
       Alert.alert("Error", "You cannot change your own permissions!");
       return;
     }
-    const res = await authAPI.updatePermission(userId, { [permission]: !currentValue });
+    const res = await authAPI.updatePermission(userId, {
+      permission,
+      action: hasIt ? "revoke" : "give",
+    });
     if (res._id) {
-      setUsers(users.map((u) => u._id === userId ? { ...u, [permission]: !currentValue } : u));
+      setUsers(users.map((u) => u._id === userId ? { ...u, permissions: res.permissions } : u));
+    } else {
+      Alert.alert("Error", "Failed to update permission");
     }
   };
 
@@ -598,29 +610,30 @@ function AdminScreen({ user }) {
       <Text style={styles.sectionTitle}>Admin Panel</Text>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryBar}>
-        {user.canApprovedOrRefuseProducts && (
+        {hasPermission(user, "canApproveOrRejectProducts") && (
           <TouchableOpacity style={[styles.categoryBtn, activeTab === "pending" && styles.categoryBtnActive]} onPress={() => setActiveTab("pending")}>
             <Text style={styles.categoryBtnText}>Pending</Text>
           </TouchableOpacity>
         )}
-        {user.canApprovedOrRefuseProducts && (
+        {hasPermission(user, "canDeleteApprovedProduct") && (
           <TouchableOpacity style={[styles.categoryBtn, activeTab === "approved" && styles.categoryBtnActive]} onPress={() => setActiveTab("approved")}>
             <Text style={styles.categoryBtnText}>Approved</Text>
           </TouchableOpacity>
         )}
-        {user.canShowAllUsersDetails && (
+        {hasPermission(user, "canShowAllUsersDetails") && (
           <TouchableOpacity style={[styles.categoryBtn, activeTab === "users" && styles.categoryBtnActive]} onPress={() => setActiveTab("users")}>
             <Text style={styles.categoryBtnText}>Users</Text>
           </TouchableOpacity>
         )}
-        {user.canGivePermisionToUser && (
+        {hasPermission(user, "canGivePermissionToUser") && (
           <TouchableOpacity style={[styles.categoryBtn, activeTab === "permissions" && styles.categoryBtnActive]} onPress={() => setActiveTab("permissions")}>
             <Text style={styles.categoryBtnText}>Permissions</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
 
-      {activeTab === "pending" && user.canApprovedOrRefuseProducts && (
+      {/* Pending */}
+      {activeTab === "pending" && hasPermission(user, "canApproveOrRejectProducts") && (
         pendingProducts.length === 0 ? <Text style={styles.emptyText}>No pending products</Text> :
           pendingProducts.map((p) => (
             <View key={p._id} style={styles.adminCard}>
@@ -638,7 +651,8 @@ function AdminScreen({ user }) {
           ))
       )}
 
-      {activeTab === "approved" && user.canApprovedOrRefuseProducts && (
+      {/* Approved */}
+      {activeTab === "approved" && hasPermission(user, "canDeleteApprovedProduct") && (
         approvedProducts.length === 0 ? <Text style={styles.emptyText}>No approved products</Text> :
           approvedProducts.map((p) => (
             <View key={p._id} style={styles.adminCard}>
@@ -651,7 +665,8 @@ function AdminScreen({ user }) {
           ))
       )}
 
-      {activeTab === "users" && user.canShowAllUsersDetails && (
+      {/* Users */}
+      {activeTab === "users" && hasPermission(user, "canShowAllUsersDetails") && (
         users.length === 0 ? <Text style={styles.emptyText}>No users</Text> :
           users.map((u) => (
             <View key={u._id} style={styles.adminCard}>
@@ -661,36 +676,33 @@ function AdminScreen({ user }) {
           ))
       )}
 
-      {activeTab === "permissions" && user.canGivePermisionToUser && (
-        users.map((u) => (
-          <View key={u._id} style={styles.adminCard}>
-            <Text style={styles.productName}>{u.name}</Text>
-            <Text style={styles.productDesc}>{u.email}</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-              <TouchableOpacity
-                style={[styles.permBtn, { backgroundColor: u.canApprovedOrRefuseProducts ? "#dc2626" : "#16a34a" }]}
-                onPress={() => togglePermission(u._id, "canApprovedOrRefuseProducts", u.canApprovedOrRefuseProducts)}
-                disabled={u._id === user.id}
-              >
-                <Text style={styles.actionBtnText}>{u.canApprovedOrRefuseProducts ? "Revoke Approve" : "Give Approve"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.permBtn, { backgroundColor: u.canShowAllUsersDetails ? "#dc2626" : "#16a34a" }]}
-                onPress={() => togglePermission(u._id, "canShowAllUsersDetails", u.canShowAllUsersDetails)}
-                disabled={u._id === user.id}
-              >
-                <Text style={styles.actionBtnText}>{u.canShowAllUsersDetails ? "Revoke Users" : "Give Users"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.permBtn, { backgroundColor: u.canGivePermisionToUser ? "#dc2626" : "#16a34a" }]}
-                onPress={() => togglePermission(u._id, "canGivePermisionToUser", u.canGivePermisionToUser)}
-                disabled={u._id === user.id}
-              >
-                <Text style={styles.actionBtnText}>{u.canGivePermisionToUser ? "Revoke Perm" : "Give Perm"}</Text>
-              </TouchableOpacity>
+      {/* Permissions */}
+      {activeTab === "permissions" && hasPermission(user, "canGivePermissionToUser") && (
+        users.map((u) => {
+          const isMe = u._id === user.id;
+          const isProtected = u.email === ROOT_ADMIN_EMAIL; 
+          return (
+            <View key={u._id} style={styles.adminCard}>
+              <Text style={styles.productName}>{u.name}</Text>
+              <Text style={styles.productDesc}>{u.email}</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                {["canApproveOrRejectProducts", "canDeleteApprovedProduct", "canShowAllUsersDetails", "canGivePermissionToUser"].map((perm) => {
+                  const hasIt = u.permissions?.includes(perm);
+                  return (
+                    <TouchableOpacity
+                      key={perm}
+                      style={[styles.permBtn, { backgroundColor: hasIt ? "#dc2626" : "#16a34a", opacity: (isMe || isProtected) ? 0.4 : 1 }]}
+                      onPress={() => togglePermission(u._id, perm, hasIt)}
+                      disabled={isMe || isProtected} 
+                    >
+                      <Text style={styles.actionBtnText}>{hasIt ? "Revoke" : "Give"}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))
+          );
+        })
       )}
     </ScrollView>
   );
@@ -701,6 +713,23 @@ function MainApp() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("dashboard");
   const insets = useSafeAreaInsets();
+
+  
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const interval = setInterval(async () => {
+      const res = await authAPI.getUsers();
+      const updatedUser = res.find((u) => u._id === user.id);
+      if (updatedUser) {
+        if (JSON.stringify(updatedUser.permissions) !== JSON.stringify(user.permissions)) {
+          setUser((prev) => ({ ...prev, permissions: updatedUser.permissions }));
+        }
+      }
+    }, 5000);//time to restart permision
+
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   if (!user) {
     return <AuthScreen onLogin={(u) => { setUser(u); setPage("dashboard"); }} />;
@@ -720,14 +749,9 @@ function MainApp() {
         {page === "settings" && <SettingsScreen user={user} />}
         {page === "admin" && <AdminScreen user={user} />}
       </View>
-
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 6 }]}>
         {navItems.map((item) => (
-          <TouchableOpacity
-            key={item.key}
-            style={[styles.navItem, page === item.key && styles.navItemActive]}
-            onPress={() => setPage(item.key)}
-          >
+          <TouchableOpacity key={item.key} style={[styles.navItem, page === item.key && styles.navItemActive]} onPress={() => setPage(item.key)}>
             <Text style={[styles.navText, page === item.key && styles.navTextActive]}>{item.label}</Text>
           </TouchableOpacity>
         ))}
@@ -747,7 +771,7 @@ export default function App() {
   );
 }
 
-//STYLE
+//STYLES 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f172a" },
   appTitle: { fontSize: 32, color: "#38bdf8", fontWeight: "bold", marginBottom: 30, letterSpacing: 3 },
@@ -764,21 +788,17 @@ const styles = StyleSheet.create({
   button: { backgroundColor: "#38bdf8", padding: 13, borderRadius: 10, marginTop: 10, width: "85%", alignItems: "center" },
   buttonText: { color: "white", fontWeight: "bold", fontSize: 15 },
   forgotText: { color: "#38bdf8", fontSize: 13, marginTop: 4, marginBottom: 4 },
-
   screen: { flex: 1, backgroundColor: "#0f172a", padding: 16 },
   dashHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
   welcomeText: { fontSize: 20, color: "#fff", fontWeight: "bold" },
   adminBtn: { backgroundColor: "#38bdf8", padding: 8, borderRadius: 8 },
   adminBtnText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
-
   categoryBar: { marginBottom: 16 },
   categoryBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: "#38bdf8", marginRight: 8, backgroundColor: "transparent" },
   categoryBtnActive: { backgroundColor: "#38bdf8" },
   categoryBtnText: { color: "#fff", fontSize: 13 },
-
   sectionTitle: { fontSize: 18, color: "#38bdf8", fontWeight: "bold", marginBottom: 12 },
   emptyText: { color: "#94a3b8", textAlign: "center", marginTop: 20 },
-
   productCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 12, marginBottom: 12, flexDirection: "row", borderWidth: 1, borderColor: "#334155" },
   productImage: { width: 70, height: 70, borderRadius: 8, marginRight: 12 },
   productInfo: { flex: 1 },
@@ -789,27 +809,22 @@ const styles = StyleSheet.create({
   productStatus: { fontSize: 12, marginBottom: 6 },
   buyBtn: { backgroundColor: "#16a34a", padding: 8, borderRadius: 8, alignItems: "center" },
   buyBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
-
   addBtn: { backgroundColor: "#38bdf8", padding: 12, borderRadius: 10, alignItems: "center", marginBottom: 16 },
   addBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
   editBtn: { backgroundColor: "#f59e0b", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
   editBtnText: { color: "#000", fontWeight: "bold", fontSize: 13 },
   deleteBtn: { backgroundColor: "#dc2626", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
   deleteBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
-
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center" },
   modalContent: { backgroundColor: "#1e293b", margin: 20, borderRadius: 12, padding: 20 },
   modalTitle: { color: "#38bdf8", fontSize: 18, fontWeight: "bold", marginBottom: 12 },
-
   settingsCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#334155" },
   settingsLabel: { color: "#fff", fontSize: 14, marginBottom: 6 },
-
   adminCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: "#334155" },
   approveBtn: { backgroundColor: "#16a34a", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
   rejectBtn: { backgroundColor: "#dc2626", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
   actionBtnText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
   permBtn: { padding: 8, borderRadius: 8, alignItems: "center" },
-
   bottomNav: { flexDirection: "row", backgroundColor: "#1e293b", borderTopWidth: 1, borderTopColor: "#334155", paddingVertical: 10 },
   navItem: { flex: 1, alignItems: "center", paddingVertical: 4 },
   navItemActive: { borderTopWidth: 2, borderTopColor: "#38bdf8" },

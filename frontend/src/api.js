@@ -34,11 +34,15 @@ export const productsAPI = {
     fetch(`${BASE_URL}/products/${id}`, {
       method: "DELETE",
     }).then((r) => r.json()),
-  
+
   update: (id, data) =>
     fetch(`${BASE_URL}/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
+};
+
+export const hasPermission = (user, permission) => {
+  return user?.permissions?.includes(permission) || false;
 };

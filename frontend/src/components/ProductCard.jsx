@@ -50,8 +50,7 @@ function ProductCard({ product, products, setProducts, user, onEdit }) {
 
       {isOwner ? (
         <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-       
-          {onEdit && (
+          {onEdit && product.status === "Pending" && (
             <button
               onClick={() => onEdit(product)}
               style={{ background: "#ffc107", color: "#000", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer" }}

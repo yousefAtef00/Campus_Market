@@ -63,10 +63,18 @@ router.post("/", async (req, res) => {
 // PUT update product
 router.put("/:id", async (req, res) => {
   try {
-    const updatedData = req.body;
-    const product = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+    
+    const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
-    res.status(200).json(product);
+
+    
+    if (product.status === "Approved") {
+      return res.status(403).json({ message: "Cannot edit approved product" });
+    }
+
+    const updatedData = req.body;
+    const updated = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+    res.status(200).json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

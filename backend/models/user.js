@@ -21,19 +21,14 @@ email: {
       enum: ["student", "teacher", "worker"],
       required: true,
     },
-    canGivePermisionToUser: {
-      type: Boolean,
-      default: false,
-    },
-    canApprovedOrRefuseProducts: { type: Boolean,
-      default: false,
-    },
-    canShowAllUsersDetails: {
-    type: Boolean,
-      default: false,
+  permissions: {
+      type: [String],
+      enum: ["canDeleteApprovedProduct", "canGivePermissionToUser", "canApproveOrRejectProducts", "canShowAllUsersDetails"],
     },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model("User", userSchema);
+
+
