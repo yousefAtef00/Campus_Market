@@ -46,3 +46,27 @@ export const productsAPI = {
 export const hasPermission = (user, permission) => {
   return user?.permissions?.includes(permission) || false;
 };
+export const swapAPI = {
+  send: (data) =>
+    fetch(`http://localhost:5000/api/swaps`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  getReceived: (email) =>
+    fetch(`http://localhost:5000/api/swaps/received/${email}`).then((r) => r.json()),
+
+  getSent: (email) =>
+    fetch(`http://localhost:5000/api/swaps/sent/${email}`).then((r) => r.json()),
+
+  updateStatus: (id, status) =>
+    fetch(`http://localhost:5000/api/swaps/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    }).then((r) => r.json()),
+
+  delete: (id) =>
+    fetch(`http://localhost:5000/api/swaps/${id}`, { method: "DELETE" }).then((r) => r.json()),
+};

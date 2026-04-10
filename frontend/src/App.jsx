@@ -6,12 +6,13 @@ import "./styles/style.css";
 import Settings from "./pages/Settings";
 import AdminDashboard from "./pages/admin";
 import Dashboard from "./pages/Dashboard";
+import Orders from "./pages/Orders";
 import { hasPermission } from "./api";
 
 function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("dashboard");
-
+const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     if (!user?.id) return;
     
@@ -57,8 +58,8 @@ function App() {
               <Dashboard user={user} />
             </div>
           )}
-          {page === "products" && <Products user={user} setPage={setPage} />}
-          {page === "orders" && <h2>Orders</h2>}
+          {page === "products" && <Products refreshKey={refreshKey} user={user} setPage={setPage} />}
+{page === "orders" && <Orders user={user} onSwapAccepted={() => setRefreshKey(k => k + 1)} />}
           {page === "messages" && <h2>Messages</h2>}
           {page === "settings" && <Settings user={user} setPage={setPage} />}
           {page === "admin" && <AdminDashboard user={user} />}

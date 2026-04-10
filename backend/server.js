@@ -18,6 +18,9 @@ app.use("/api/auth", authRoutes);
 const productRoutes = require("./routes/productRoute");
 app.use("/api/products", productRoutes);
 
+const swapRoutes = require("./routes/swapRoute");
+app.use("/api/swaps", swapRoutes);
+
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
@@ -29,8 +32,8 @@ mongoose.connect(process.env.MONGO_URI)
 
       ngrok.connect({
         addr: PORT,
-        authtoken: "3BsFIoB752pXHt2VBqls4ujDwTm_5LCXzeRkSxxkMsT6waHHw",        // ← حط الـ token الجديد هنا
-        hostname: "curdy-nonputrescent-kerrie.ngrok-free.dev"  // ← حط الـ domain بتاعك هنا
+        authtoken: "3BsFIoB752pXHt2VBqls4ujDwTm_5LCXzeRkSxxkMsT6waHHw",
+        hostname: "curdy-nonputrescent-kerrie.ngrok-free.dev"
       }).then((url) => {
         console.log(`Ngrok URL: ${url}`);
         console.log(`Use this in frontend: ${url}/api`);

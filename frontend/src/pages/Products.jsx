@@ -4,13 +4,13 @@ import Categories from "../components/Categories";
 import ProductCard from "../components/ProductCard";
 import { productsAPI } from "../api";
 
-function Products({ user }) {
+function Products({ user, refreshKey }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState("All");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [editProduct, setEditProduct] = useState(null); 
+  const [editProduct, setEditProduct] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -25,7 +25,7 @@ function Products({ user }) {
       setLoading(false);
     };
     fetchProducts();
-  }, [user]);
+  }, [user, refreshKey]);
 
   const filtered =
     selected === "All"
@@ -55,7 +55,7 @@ function Products({ user }) {
             products={products}
             setProducts={setProducts}
             user={user}
-            onEdit={(product) => { setEditProduct(product); setOpen(true); }} 
+            onEdit={(product) => { setEditProduct(product); setOpen(true); }}
           />
         ))}
       </div>
@@ -65,7 +65,7 @@ function Products({ user }) {
           products={products}
           setProducts={setProducts}
           user={user}
-          editProduct={editProduct} 
+          editProduct={editProduct}
         />
       )}
     </div>
