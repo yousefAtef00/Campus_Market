@@ -4,7 +4,7 @@ import Categories from "../components/Categories";
 import ProductCard from "../components/ProductCard";
 import { productsAPI } from "../api";
 
-function Products({ user, refreshKey }) {
+function Products({ user, refreshKey, addToCart })  {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState("All");
@@ -47,17 +47,22 @@ function Products({ user, refreshKey }) {
           Add Product
         </button>
       )}
+  
       <div className="products-grid">
-        {filtered.map((p) => (
-          <ProductCard
-            key={p._id}
-            product={p}
-            products={products}
-            setProducts={setProducts}
-            user={user}
-            onEdit={(product) => { setEditProduct(product); setOpen(true); }}
-          />
-        ))}
+ {filtered.map((p) => (
+  <ProductCard
+    key={p._id}
+    product={p}
+    products={products}
+    setProducts={setProducts}
+    user={user}
+    onEdit={(product) => {
+      setEditProduct(product);
+      setOpen(true);
+    }}
+    addToCart={addToCart}
+  />
+))}
       </div>
       {open && (
         <ProductModal

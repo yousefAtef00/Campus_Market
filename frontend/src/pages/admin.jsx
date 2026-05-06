@@ -123,7 +123,6 @@ const AdminDashboard = ({ user }) => {
 
         <div className="admin-content">
 
-          {/* Pending */}
           {activeTab === "pending" && hasPermission(user, "canApproveOrRejectProducts") && (
             <>
               <h2>Pending Products</h2>
@@ -147,7 +146,6 @@ const AdminDashboard = ({ user }) => {
             </>
           )}
 
-          {/* Approved */}
           {activeTab === "approved" && hasPermission(user, "canDeleteApprovedProduct") && (
             <>
               <h2>Live Products</h2>
@@ -168,7 +166,6 @@ const AdminDashboard = ({ user }) => {
             </>
           )}
 
-          {/* Users */}
           {activeTab === "users" && hasPermission(user, "canShowAllUsersDetails") && (
             <>
               <h2>System Users</h2>
@@ -187,7 +184,6 @@ const AdminDashboard = ({ user }) => {
             </>
           )}
 
-          {/* Permissions */}
           {activeTab === "permissions" && hasPermission(user, "canGivePermissionToUser") && (
             <>
               <h2>Manage Permissions</h2>

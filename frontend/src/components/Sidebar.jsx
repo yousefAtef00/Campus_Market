@@ -1,4 +1,3 @@
-import { useState } from "react";
 
 const sidebarStyles = `
   .sidebar {
@@ -112,6 +111,7 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
 
       {/* Nav Links */}
       <ul>
+        <h1 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>Campus Market</h1>
         <li
           className={currentPage === "dashboard" ? "active-page" : ""}
           onClick={() => setPage("dashboard")}
@@ -142,6 +142,20 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
         >
           Settings
         </li>
+
+        {/* ADMIN */}
+        {(
+          user?.permissions?.includes("canGivePermissionToUser") ||
+          user?.permissions?.includes("canApproveOrRejectProducts") ||
+          user?.permissions?.includes("canShowAllUsersDetails") ||
+          user?.permissions?.includes("canDeleteApprovedProduct")) && (
+          <li
+            className={currentPage === "admin" ? "active-page" : ""}
+            onClick={() => setPage("admin")}
+          >
+            Admin Panel
+          </li>
+        )}
       </ul>
 
       {/* User Info + Logout */}

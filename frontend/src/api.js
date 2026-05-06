@@ -41,32 +41,39 @@ export const productsAPI = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
+
+  buy: (id) =>
+    fetch(`${BASE_URL}/products/buy/${id}`, {
+      method: "PUT",
+    }).then((r) => r.json()),
 };
 
 export const hasPermission = (user, permission) => {
   return user?.permissions?.includes(permission) || false;
 };
+
+// ✅ كل الـ swap API بتستخدم BASE_URL مش localhost مباشرة
 export const swapAPI = {
   send: (data) =>
-    fetch(`http://localhost:5000/api/swaps`, {
+    fetch(`${BASE_URL}/swaps`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   getReceived: (email) =>
-    fetch(`http://localhost:5000/api/swaps/received/${email}`).then((r) => r.json()),
+    fetch(`${BASE_URL}/swaps/received/${email}`).then((r) => r.json()),
 
   getSent: (email) =>
-    fetch(`http://localhost:5000/api/swaps/sent/${email}`).then((r) => r.json()),
+    fetch(`${BASE_URL}/swaps/sent/${email}`).then((r) => r.json()),
 
   updateStatus: (id, status) =>
-    fetch(`http://localhost:5000/api/swaps/${id}`, {
+    fetch(`${BASE_URL}/swaps/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     }).then((r) => r.json()),
 
   delete: (id) =>
-    fetch(`http://localhost:5000/api/swaps/${id}`, { method: "DELETE" }).then((r) => r.json()),
+    fetch(`${BASE_URL}/swaps/${id}`, { method: "DELETE" }).then((r) => r.json()),
 };

@@ -3,7 +3,7 @@ import ProductCard from "../components/ProductCard";
 import Categories from "../components/Categories";
 import { productsAPI } from "../api";
 
-function Dashboard({ user }) {
+function Dashboard({ user, addToCart, cartItems, removeFromCart }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState("All");
@@ -73,6 +73,7 @@ function Dashboard({ user }) {
           🔍
         </span>
       </div>
+
       {search && (
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>
           {filtered.length} result{filtered.length !== 1 ? "s" : ""} found
@@ -91,14 +92,17 @@ function Dashboard({ user }) {
           <p>No products match your search</p>
         ) : (
           filtered.map((p) => (
-            <ProductCard
-              key={p._id}
-              product={p}
-              products={products}
-              setProducts={setProducts}
-              user={user}
-              onEdit={null}
-            />
+          <ProductCard
+  key={p._id}
+  product={p}
+  products={products}
+  setProducts={setProducts}
+  user={user}
+  onEdit={null}
+  addToCart={addToCart}
+  removeFromCart={removeFromCart}  // ✅ المهم دي موجودة
+  cartItems={cartItems}
+/>
           ))
         )}
       </div>

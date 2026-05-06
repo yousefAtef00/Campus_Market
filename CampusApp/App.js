@@ -12,7 +12,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
-const BASE_URL = "https://curdy-nonputrescent-kerrie.ngrok-free.dev/api";
+//const BASE_URL = "https://curdy-nonputrescent-kerrie.ngrok-free.dev/api";
+const BASE_URL = "http://192.168.1.9:5000/api";
+
 const ROOT_ADMIN_EMAIL = "0@gmail.com";
 
 //API
