@@ -42,7 +42,7 @@ app.post("/chat", async (req, res) => {
   try {
     const products = await Product.find().limit(5);
 
-    const productList = products.map(p =>
+    const productList = (products || []).map(p =>
       `- name: ${p.name}, description: ${p.description}, price: ${p.price}, category: ${p.category}`
     ).join("\n");
 
@@ -50,7 +50,7 @@ app.post("/chat", async (req, res) => {
 
     console.log("GEMINI RESPONSE:", JSON.stringify(data, null, 2));
 
-    if (data.error) {
+    if (!data || data.error) {
       console.log("Primary model failed, switching to fallback...");
 
       data = await callGemini("gemini-2.5-flash-lite", userMessage, productList);
