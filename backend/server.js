@@ -68,9 +68,12 @@ app.post("/chat", async (req, res) => {
     res.json({ reply: reply || "No response from Gemini" });
 
   } catch (err) {
-    console.error("SERVER ERROR:", err);
-    res.status(500).json({ error: "Gemini request failed" });
-  }
+  console.error(err);
+
+  res.status(500).json({
+    reply: "AI temporarily unavailable"
+  });
+}
 });
 
 app.get("/", (req, res) => res.send("API Running..."));
