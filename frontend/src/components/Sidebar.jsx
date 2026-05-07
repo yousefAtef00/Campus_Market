@@ -148,7 +148,7 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
           Settings
         </li>
 
-        {/* ADMIN */}
+       
         {(
           user?.permissions?.includes("canGivePermissionToUser") ||
           user?.permissions?.includes("canApproveOrRejectProducts") ||
@@ -163,7 +163,7 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
         )}
       </ul>
 
-      {/* User Info + Logout */}
+    
       <div className="user-info">
         <p>{user?.name}</p>
         <span>{user?.role}</span>

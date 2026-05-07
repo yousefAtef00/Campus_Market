@@ -61,7 +61,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
     console.error("Upload error:", err);
     alert("Upload failed! Check your internet or try again.");
   } finally {
-    // 🔥 أهم سطر
+  
     setUploading(false);
   }
 };
