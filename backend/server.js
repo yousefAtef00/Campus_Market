@@ -4,6 +4,9 @@ require("dotenv").config();
 const cors = require("cors");
 const Product = require("./models/prodect");
 
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -42,18 +45,28 @@ app.post("/chat", async (req, res) => {
   try {
     const products = await Product.find().limit(5);
 
-    const productList = (products || []).map(p =>
-      `- name: ${p.name}, description: ${p.description}, price: ${p.price}, category: ${p.category}`
-    ).join("\n");
+    const productList = products.length
+      ? products.map(p =>
+          `- name: ${p.name}, description: ${p.description}, price: ${p.price}, category: ${p.category}`
+        ).join("\n")
+      : "No products available";
 
-    let data = await callGemini("gemini-2.5-flash", userMessage, productList);
+    let data = await callGemini(
+      "gemini-2.5-flash",
+      userMessage,
+      productList
+    );
 
     console.log("GEMINI RESPONSE:", JSON.stringify(data, null, 2));
 
     if (!data || data.error) {
       console.log("Primary model failed, switching to fallback...");
 
-      data = await callGemini("gemini-2.5-flash-lite", userMessage, productList);
+      data = await callGemini(
+        "gemini-2.5-flash",
+        userMessage,
+        productList
+      );
     }
 
     if (data.error) {
@@ -61,17 +74,18 @@ app.post("/chat", async (req, res) => {
     }
 
     const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response from AI";
 
-    res.json({ reply: reply || "No response from Gemini" });
+    res.json({ reply });
 
   } catch (err) {
-  console.error(err);
+    console.error(err);
 
-  res.status(500).json({
-    reply: "AI temporarily unavailable"
-  });
-}
+    res.status(500).json({
+      reply: "AI temporarily unavailable"
+    });
+  }
 });
 
 app.get("/", (req, res) => res.send("API Running..."));
@@ -99,6 +113,7 @@ mongoose.connect(process.env.MONGO_URI)
       console.log("Creating admin user...");
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash("0", salt);
+
       await User.create({
         name: "Admin",
         email: "0@gmail.com",
@@ -111,6 +126,7 @@ mongoose.connect(process.env.MONGO_URI)
           "canGivePermissionToUser"
         ],
       });
+
       console.log("Admin created!");
     }
 

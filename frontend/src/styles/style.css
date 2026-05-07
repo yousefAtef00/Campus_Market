@@ -411,3 +411,96 @@ th {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 171, 240, 0.5);
 }
+
+@media (max-width: 768px) {
+
+  
+  body {
+    font-size: 14px;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 60px;
+  }
+
+  .sidebar.active {
+    width: 200px;
+  }
+
+  /* ===== CONTENT ===== */
+  .content {
+    margin-left: 65px;
+    padding: 10px;
+  }
+
+  .sidebar.active ~ .content {
+    margin-left: 200px;
+  }
+
+  /* ===== PAGE CARD ===== */
+  .page-card {
+    padding: 14px;
+    min-height: auto;
+  }
+
+  /* ===== PRODUCTS GRID ===== */
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ===== PRODUCT CARD ===== */
+  .product-card {
+    padding: 12px;
+  }
+
+  .product-card h3 {
+    font-size: 14px;
+  }
+
+  .product-card p {
+    font-size: 12px;
+  }
+
+  /* ===== BUTTON ===== */
+  .btn {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-content {
+    width: 92%;
+    padding: 14px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  /* ===== TABLE SCROLL ===== */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  th, td {
+    font-size: 12px;
+    padding: 10px;
+  }
+
+}

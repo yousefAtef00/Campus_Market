@@ -1,4 +1,3 @@
-
 const sidebarStyles = `
   .sidebar {
     position: fixed;
@@ -29,25 +28,26 @@ const sidebarStyles = `
     flex: 1;
   }
 
-.sidebar ul li {
-  width: 100%;
-  height: 55px;
+  .sidebar ul li {
+    width: 100%;
+    height: 55px;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-  margin-bottom: 10px;
-  background: transparent;
-  border: 1px solid #00abf0;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 40px;
-  transition: 0.3s;
-  font-size: 15px;
+    margin-bottom: 10px;
+    background: transparent;
+    border: 1px solid #00abf0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 40px;
+    transition: 0.3s;
+    font-size: 15px;
 
-  box-sizing: border-box;
-}
+    box-sizing: border-box;
+  }
+
   .sidebar ul li:hover {
     background: #00abf0;
     box-shadow: 0 0 15px #00abf0;
@@ -102,6 +102,60 @@ const sidebarStyles = `
     text-align: center;
     opacity: 0.8;
   }
+
+
+
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 70px;
+      padding: 10px;
+    }
+
+    .sidebar .logo h1 {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar ul li {
+      height: 45px;
+      font-size: 12px;
+      border-radius: 20px;
+    }
+
+    .content {
+      margin-left: 70px;
+      padding: 15px;
+    }
+
+    .user-info p {
+      font-size: 11px;
+    }
+
+    .user-info span {
+      font-size: 10px;
+    }
+
+    .logout-btn {
+      padding: 10px;
+      font-size: 12px;
+    }
+  }
+
+  /* very small phones */
+  @media (max-width: 420px) {
+    .sidebar {
+      width: 60px;
+    }
+
+    .content {
+      margin-left: 60px;
+    }
+
+    .sidebar ul li {
+      font-size: 11px;
+      height: 40px;
+    }
+  }
 `;
 
 function Sidebar({ setPage, user, onLogout, currentPage }) {
@@ -111,36 +165,40 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
 
       {/* Logo */}
       <div className="logo">
-        <h1 style={{  fontSize: '1.5rem' }}>SWAPSTER</h1>
+        <h1 style={{ fontSize: '1.5rem' }}>SWAPSTER</h1>
       </div>
 
-    
       <ul>
-        <h1 style={{  marginBottom: '20px', fontSize: '1.5rem' }}></h1>
+        <h1 style={{ marginBottom: '20px', fontSize: '1.5rem' }}></h1>
+
         <li
           className={currentPage === "dashboard" ? "active-page" : ""}
           onClick={() => setPage("dashboard")}
         >
           Dashboard
         </li>
+
         <li
           className={currentPage === "products" ? "active-page" : ""}
           onClick={() => setPage("products")}
         >
           Products
         </li>
+
         <li
           className={currentPage === "orders" ? "active-page" : ""}
           onClick={() => setPage("orders")}
         >
           Orders
         </li>
+
         <li
           className={currentPage === "Reviews" ? "active-page" : ""}
           onClick={() => setPage("Reviews")}
         >
           Reviews
         </li>
+
         <li
           className={currentPage === "settings" ? "active-page" : ""}
           onClick={() => setPage("settings")}
@@ -148,12 +206,12 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
           Settings
         </li>
 
-       
         {(
           user?.permissions?.includes("canGivePermissionToUser") ||
           user?.permissions?.includes("canApproveOrRejectProducts") ||
           user?.permissions?.includes("canShowAllUsersDetails") ||
-          user?.permissions?.includes("canDeleteApprovedProduct")) && (
+          user?.permissions?.includes("canDeleteApprovedProduct")
+        ) && (
           <li
             className={currentPage === "admin" ? "active-page" : ""}
             onClick={() => setPage("admin")}
@@ -163,11 +221,11 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
         )}
       </ul>
 
-    
       <div className="user-info">
         <p>{user?.name}</p>
         <span>{user?.role}</span>
       </div>
+
       <button className="logout-btn" onClick={onLogout}>
         Logout
       </button>

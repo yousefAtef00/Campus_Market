@@ -79,10 +79,9 @@ const DEFAULT_IMAGE = "https://s3.ap-south-1.amazonaws.com/production.media.hafl
   onError={(e) => (e.target.src = DEFAULT_IMAGE)}
   alt={product.name}
   style={{
-  
+  objectFit: "cover",
+height: "200px",
    width: "100%",
-    height: "auto",
-    objectFit: "unset",
     borderRadius: 8,
     marginBottom: 12,
 

@@ -11,6 +11,7 @@ const defaultCategories = [
 ];
 
 const DEFAULT_IMAGE = "https://s3.ap-south-1.amazonaws.com/production.media.hafla.com/static_images/host/default-images/default-product.png";
+
 function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
   const [name, setName] = useState(editProduct?.name || "");
   const [description, setDescription] = useState(editProduct?.description || "");
@@ -20,51 +21,49 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
- const uploadImage = async (file) => {
-  setUploading(true);
+  const uploadImage = async (file) => {
+    setUploading(true);
 
-  try {
-    const options = {
-      maxSizeMB: 0.3,
-      maxWidthOrHeight: 800,
-      useWebWorker: true,
-    };
+    try {
+      const options = {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
 
-    const compressedFile = await imageCompression(file, options);
+      const compressedFile = await imageCompression(file, options);
 
-    const formData = new FormData();
-    formData.append("file", compressedFile);
-    formData.append("upload_preset", "image0");
+      const formData = new FormData();
+      formData.append("file", compressedFile);
+      formData.append("upload_preset", "image0");
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dgiahpav3/image/upload",
-      {
-        method: "POST",
-        body: formData,
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dgiahpav3/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
       }
-    );
 
-    // ❗ check response
-    if (!res.ok) {
-      throw new Error("Upload failed");
+      const data = await res.json();
+
+      if (data.secure_url) {
+        setImage(data.secure_url);
+      } else {
+        throw new Error("No image returned");
+      }
+
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Upload failed! Check your internet or try again.");
+    } finally {
+      setUploading(false);
     }
-
-    const data = await res.json();
-
-    if (data.secure_url) {
-      setImage(data.secure_url);
-    } else {
-      throw new Error("No image returned");
-    }
-
-  } catch (err) {
-    console.error("Upload error:", err);
-    alert("Upload failed! Check your internet or try again.");
-  } finally {
-  
-    setUploading(false);
-  }
-};
+  };
 
   const save = async () => {
     if (!name || !price || !category) {
@@ -125,6 +124,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
   return (
     <div className="modal" style={{ display: "flex" }}>
       <div className="modal-content">
+
         <h3>{editProduct ? "Edit Product" : "Add Product"}</h3>
 
         <input
@@ -156,13 +156,14 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
           onClick={() => document.getElementById("productImageUpload").click()}
           style={{
             width: "100%",
-            padding: "10px",
+            padding: "12px",
             background: "rgba(255,255,255,0.05)",
             border: "1.5px dashed rgba(0,171,240,0.4)",
             borderRadius: 8,
             color: uploading ? "#00abf0" : "rgba(255,255,255,0.7)",
             cursor: "pointer",
             marginBottom: 8,
+            fontSize: 14,
           }}
         >
           {uploading ? "⏳ uploading..." : "📷 upload image"}
@@ -172,13 +173,14 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
           src={image || DEFAULT_IMAGE}
           alt="preview"
           style={{
-          width: "100%",
-    height: "auto",
-    objectFit: "unset",
-    borderRadius: 8,
-  marginTop: 8,
-    marginBottom: 12,
-    display: "block"
+            width: "100%",
+            height: 180,
+            objectFit: "cover",
+            borderRadius: 8,
+            marginTop: 8,
+            marginBottom: 12,
+            display: "block",
+            border: "1px solid rgba(255,255,255,0.1)"
           }}
         />
 
@@ -202,6 +204,7 @@ function ProductModal({ setOpen, products, setProducts, user, editProduct }) {
         <button onClick={save} disabled={loading || uploading}>
           {loading ? "Saving..." : editProduct ? "Update" : "Save"}
         </button>
+
         <button onClick={() => setOpen(false)}>Cancel</button>
       </div>
     </div>
