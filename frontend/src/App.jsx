@@ -49,7 +49,7 @@ function App() {
     if (!user?.id) return;
 
     const interval = setInterval(async () => {
-      const res = await fetch(`http://localhost:5000/api/auth/users`)
+      const res = await fetch(`https://campus-market.fly.dev/api/auth/users`)
         .then((r) => r.json());
 
       const updatedUser = res.find((u) => u._id === user.id);

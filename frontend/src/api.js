@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://campus-market.fly.dev/api";
 
 export const authAPI = {
   register: (data) =>
@@ -52,7 +52,7 @@ export const hasPermission = (user, permission) => {
   return user?.permissions?.includes(permission) || false;
 };
 
-// ✅ كل الـ swap API بتستخدم BASE_URL مش localhost مباشرة
+
 export const swapAPI = {
   send: (data) =>
     fetch(`${BASE_URL}/swaps`, {

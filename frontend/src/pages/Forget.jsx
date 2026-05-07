@@ -19,7 +19,7 @@ const handleSubmit = async (e) => {
     alert("Passwords do not match!");
     return;
   }
-  const res = await fetch("http://localhost:5000/api/auth/forgetPassword", {
+  const res = await fetch("https://campus-market.fly.dev/api/auth/forgetPassword", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

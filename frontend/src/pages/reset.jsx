@@ -10,7 +10,7 @@ const handleReset = async (e) => {
     return;
   }
   
-  const res = await fetch("http://localhost:5000/api/auth/resetPassword", {
+  const res = await fetch("https://campus-market.fly.dev/api/auth/resetPassword", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: user.email, newPassword: pass.new }),

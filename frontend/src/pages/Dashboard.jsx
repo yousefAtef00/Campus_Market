@@ -100,7 +100,7 @@ function Dashboard({ user, addToCart, cartItems, removeFromCart }) {
   user={user}
   onEdit={null}
   addToCart={addToCart}
-  removeFromCart={removeFromCart}  // ✅ المهم دي موجودة
+  removeFromCart={removeFromCart} 
   cartItems={cartItems}
 />
           ))

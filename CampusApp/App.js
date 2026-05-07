@@ -1,90 +1,94 @@
 //npx expo start --offline --clear
-//ngrok http --domain=curdy-nonputrescent-kerrie.ngrok-free.dev 5000
-//https://curdy-nonputrescent-kerrie.ngrok-free.dev/api
-import React, { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Animated, Dimensions, Alert, ScrollView,
-  Modal, Image, ActivityIndicator
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Modal,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get("window");
-//const BASE_URL = "https://curdy-nonputrescent-kerrie.ngrok-free.dev/api";
-const BASE_URL = "http://192.168.1.9:5000/api";
+const BASE_URL = "https://campus-market.fly.dev/api"; 
 
-const ROOT_ADMIN_EMAIL = "0@gmail.com";
-
-//API
 const authAPI = {
-  login: (data) =>
-    fetch(`${BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-
   register: (data) =>
     fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
-
-  resetPassword: (data) =>
-    fetch(`${BASE_URL}/auth/resetPassword`, {
-      method: "PUT",
+  login: (data) =>
+    fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
-
-  forgetPassword: (data) =>
-    fetch(`${BASE_URL}/auth/forgetPassword`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-
   getUsers: () =>
     fetch(`${BASE_URL}/auth/users`).then((r) => r.json()),
-
-  updatePermission: (id, data) =>
+  updatePermission: (id, permission, action) =>
     fetch(`${BASE_URL}/auth/users/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ permission, action }),
+    }).then((r) => r.json()),
+  resetPassword: (email, newPassword) =>
+    fetch(`${BASE_URL}/auth/resetPassword`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, newPassword }),
+    }).then((r) => r.json()),
+  forgetPassword: (email, name, newPassword) =>
+    fetch(`${BASE_URL}/auth/forgetPassword`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name, newPassword }),
     }).then((r) => r.json()),
 };
 
 const productsAPI = {
   getAll: () => fetch(`${BASE_URL}/products`).then((r) => r.json()),
-  getByEmail: (email) => fetch(`${BASE_URL}/products/user/${email}`).then((r) => r.json()),
+  getByEmail: (email) =>
+    fetch(`${BASE_URL}/products/user/${email}`).then((r) => r.json()),
   create: (data) =>
     fetch(`${BASE_URL}/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
+  delete: (id) =>
+    fetch(`${BASE_URL}/products/${id}`, { method: "DELETE" }).then((r) =>
+      r.json()
+    ),
   update: (id, data) =>
     fetch(`${BASE_URL}/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
-  delete: (id) =>
-    fetch(`${BASE_URL}/products/${id}`, { method: "DELETE" }).then((r) => r.json()),
   buy: (id) =>
-    fetch(`${BASE_URL}/products/buy/${id}`, { method: "PUT" }).then((r) => r.json()),
-  updateStatus: (id, status) =>
-    fetch(`${BASE_URL}/products/status/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    }).then((r) => r.json()),
+    fetch(`${BASE_URL}/products/buy/${id}`, { method: "PUT" }).then((r) =>
+      r.json()
+    ),
+  approve: (id) =>
+    fetch(`${BASE_URL}/products/${id}/approve`, { method: "PUT" }).then((r) =>
+      r.json()
+    ),
+  reject: (id) =>
+    fetch(`${BASE_URL}/products/${id}/reject`, { method: "PUT" }).then((r) =>
+      r.json()
+    ),
 };
-
 
 const swapAPI = {
   send: (data) =>
@@ -93,876 +97,1148 @@ const swapAPI = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then((r) => r.json()),
-
   getReceived: (email) =>
     fetch(`${BASE_URL}/swaps/received/${email}`).then((r) => r.json()),
-
   getSent: (email) =>
     fetch(`${BASE_URL}/swaps/sent/${email}`).then((r) => r.json()),
-
   updateStatus: (id, status) =>
     fetch(`${BASE_URL}/swaps/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     }).then((r) => r.json()),
-
   delete: (id) =>
-    fetch(`${BASE_URL}/swaps/${id}`, { method: "DELETE" }).then((r) => r.json()),
+    fetch(`${BASE_URL}/swaps/${id}`, { method: "DELETE" }).then((r) =>
+      r.json()
+    ),
 };
 
-const hasPermission = (user, permission) => {
-  return user?.permissions?.includes(permission) || false;
+const hasPermission = (user, permission) =>
+  user?.permissions?.includes(permission) || false;
+
+
+const C = {
+  bg: "#081b29",
+  accent: "#00abf0",
+  card: "#0d2137",
+  border: "rgba(0,171,240,0.3)",
+  white: "#ffffff",
+  gray: "rgba(255,255,255,0.6)",
+  red: "#e74c3c",
+  green: "#2ecc71",
+  yellow: "#f39c12",
 };
 
-//AUTH SCREEN 
-function AuthScreen({ onLogin }) {
+
+
+function Btn({ title, onPress, color, style, textStyle, disabled }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        {
+          backgroundColor: color || C.accent,
+          borderRadius: 40,
+          paddingVertical: 13,
+          paddingHorizontal: 20,
+          alignItems: "center",
+          opacity: disabled ? 0.5 : 1,
+        },
+        style,
+      ]}
+    >
+      <Text style={[{ color: "#fff", fontWeight: "600", fontSize: 15 }, textStyle]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function InputField({ placeholder, value, onChangeText, secureTextEntry, keyboardType }) {
+  return (
+    <TextInput
+      placeholder={placeholder}
+      placeholderTextColor={C.gray}
+      value={value}
+      onChangeText={onChangeText}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType || "default"}
+      style={{
+        backgroundColor: "rgba(255,255,255,0.06)",
+        borderWidth: 1.5,
+        borderColor: C.border,
+        borderRadius: 40,
+        color: C.white,
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        fontSize: 14,
+        marginBottom: 14,
+      }}
+    />
+  );
+}
+
+
+function AuthForm({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
-  const [anim] = useState(new Animated.Value(0));
   const [showForget, setShowForget] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [regName, setRegName] = useState("");
-  const [regEmail, setRegEmail] = useState("");
-  const [regPassword, setRegPassword] = useState("");
-  const [role, setRole] = useState(null);
-  const [regLoading, setRegLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
+  const [loading, setLoading] = useState(false);
 
-  const roles = [
-    { label: "Student", value: "student" },
-    { label: "Professor", value: "teacher" },
-    { label: "Worker", value: "worker" },
-  ];
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const toggle = () => {
-    Animated.timing(anim, { toValue: isLogin ? 1 : 0, duration: 400, useNativeDriver: true }).start();
-    setIsLogin(!isLogin);
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      if (isLogin) {
+        const res = await authAPI.login({ email: form.email, password: form.password });
+        if (res.user) {
+          onLogin(res.user);
+        } else {
+          Alert.alert("Error", res.message || "Login failed");
+        }
+      } else {
+        const res = await authAPI.register(form);
+        if (res._id) {
+          Alert.alert("Success", "Registered! Please login.");
+          setIsLogin(true);
+        } else {
+          Alert.alert("Error", res.message || "Register failed");
+        }
+      }
+    } catch (e) {
+      Alert.alert("Error", "Network error");
+    }
+    setLoading(false);
   };
 
-  const translateX = anim.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
-
-  const handleLogin = async () => {
-    if (!loginEmail || !loginPassword) { Alert.alert("Error", "Please fill all fields"); return; }
-    setLoginLoading(true);
-    const res = await authAPI.login({ email: loginEmail, password: loginPassword });
-    setLoginLoading(false);
-    if (res.user) { onLogin(res.user); } else { Alert.alert("Error", res.message || "Login failed"); }
-  };
-
-  const handleRegister = async () => {
-    if (!regName || !regEmail || !regPassword || !role) { Alert.alert("Error", "Please fill all fields and select a role"); return; }
-    setRegLoading(true);
-    const res = await authAPI.register({ name: regName, email: regEmail, password: regPassword, role });
-    setRegLoading(false);
-    if (res._id) { Alert.alert("Success", "Registered successfully! Please login."); toggle(); }
-    else { Alert.alert("Error", res.message || "Register failed"); }
-  };
-
-  if (showForget) return <ForgetPasswordScreen onBack={() => setShowForget(false)} />;
+  if (showForget) return <ForgetPage onBack={() => setShowForget(false)} />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.appTitle}>SWAPSTER</Text>
-      <View style={styles.switchContainer}>
-        <TouchableOpacity onPress={() => !isLogin && toggle()}>
-          <Text style={[styles.switchText, isLogin && styles.active]}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => isLogin && toggle()}>
-          <Text style={[styles.switchText, !isLogin && styles.active]}>Register</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.overflowWrapper}>
-        <Animated.View style={[styles.formContainer, { transform: [{ translateX }] }]}>
-          <View style={styles.form}>
-            <TextInput placeholder="Email" placeholderTextColor="#94a3b8" style={styles.input} onChangeText={setLoginEmail} value={loginEmail} keyboardType="email-address" autoCapitalize="none" />
-            <TextInput placeholder="Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} onChangeText={setLoginPassword} value={loginPassword} />
-            <TouchableOpacity onPress={() => setShowForget(true)}>
-              <Text style={styles.forgotText}>Forgot Password?</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loginLoading}>
-              {loginLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
-            </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1, justifyContent: "center", padding: 28 }}
+      >
+        <Text style={{ color: C.accent, fontSize: 32, fontWeight: "700", textAlign: "center", marginBottom: 6, letterSpacing: 2 }}>
+          SWAPSTER
+        </Text>
+        <Text style={{ color: C.gray, textAlign: "center", marginBottom: 30, fontSize: 13 }}>
+          {isLogin ? "Sign in to your account" : "Create a new account"}
+        </Text>
+
+        {!isLogin && (
+          <InputField placeholder="Full Name" value={form.name} onChangeText={(v) => set("name", v)} />
+        )}
+        <InputField placeholder="Email" value={form.email} onChangeText={(v) => set("email", v)} keyboardType="email-address" />
+        <InputField placeholder="Password" value={form.password} onChangeText={(v) => set("password", v)} secureTextEntry />
+
+        {!isLogin && (
+          <View style={{ flexDirection: "row", marginBottom: 14, gap: 10 }}>
+            {["student", "teacher"].map((r) => (
+              <TouchableOpacity
+                key={r}
+                onPress={() => set("role", r)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 11,
+                  borderRadius: 40,
+                  borderWidth: 1.5,
+                  borderColor: form.role === r ? C.accent : C.border,
+                  backgroundColor: form.role === r ? C.accent : "transparent",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff", textTransform: "capitalize", fontWeight: "600" }}>{r}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={styles.form}>
-            <TextInput placeholder="Name" placeholderTextColor="#94a3b8" style={styles.input} onChangeText={setRegName} value={regName} />
-            <TextInput placeholder="Email" placeholderTextColor="#94a3b8" style={styles.input} onChangeText={setRegEmail} value={regEmail} keyboardType="email-address" autoCapitalize="none" />
-            <Dropdown style={styles.dropdown} placeholderStyle={styles.placeholderStyle} selectedTextStyle={styles.selectedTextStyle} data={roles} labelField="label" valueField="value" placeholder="Select Role" value={role} onChange={(item) => setRole(item.value)} />
-            <TextInput placeholder="Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} onChangeText={setRegPassword} value={regPassword} />
-            <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={regLoading}>
-              {regLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Register</Text>}
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
+        )}
+
+        <Btn title={loading ? "Please wait..." : isLogin ? "Login" : "Register"} onPress={handleSubmit} disabled={loading} style={{ marginTop: 4 }} />
+
+        {isLogin && (
+          <TouchableOpacity onPress={() => setShowForget(true)} style={{ marginTop: 14 }}>
+            <Text style={{ color: C.accent, textAlign: "center", fontSize: 13 }}>Forgot password?</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={{ marginTop: 16 }}>
+          <Text style={{ color: C.gray, textAlign: "center", fontSize: 13 }}>
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <Text style={{ color: C.accent, fontWeight: "600" }}>{isLogin ? "Register" : "Login"}</Text>
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+function ForgetPage({ onBack }) {
+  const [form, setForm] = useState({ username: "", email: "", newPassword: "", confirmPassword: "" });
+  const [loading, setLoading] = useState(false);
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSubmit = async () => {
+    if (form.newPassword !== form.confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authAPI.forgetPassword(form.email, form.username, form.newPassword);
+      if (res.message === "Password reset successful") {
+        Alert.alert("Success", "Password reset! Please login.");
+        onBack();
+      } else {
+        Alert.alert("Error", res.message || "Something went wrong");
+      }
+    } catch {
+      Alert.alert("Error", "Network error");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, justifyContent: "center", padding: 28 }}>
+        <Text style={{ color: C.accent, fontSize: 26, fontWeight: "700", textAlign: "center", marginBottom: 24 }}>Forgot Password</Text>
+        <InputField placeholder="Full Name" value={form.username} onChangeText={(v) => set("username", v)} />
+        <InputField placeholder="Email" value={form.email} onChangeText={(v) => set("email", v)} keyboardType="email-address" />
+        <InputField placeholder="New Password" value={form.newPassword} onChangeText={(v) => set("newPassword", v)} secureTextEntry />
+        <InputField placeholder="Confirm Password" value={form.confirmPassword} onChangeText={(v) => set("confirmPassword", v)} secureTextEntry />
+        <Btn title={loading ? "Please wait..." : "Reset Password"} onPress={handleSubmit} disabled={loading} />
+        <TouchableOpacity onPress={onBack} style={{ marginTop: 16 }}>
+          <Text style={{ color: C.gray, textAlign: "center" }}>← Back to Login</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+
+function ResetPage({ user, onBack }) {
+  const [pass, setPass] = useState({ new: "", confirm: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleReset = async () => {
+    if (pass.new !== pass.confirm) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authAPI.resetPassword(user.email, pass.new);
+      if (res.message === "Password reset successful") {
+        Alert.alert("Success", "Password reset successfully!");
+        onBack();
+      } else {
+        Alert.alert("Error", res.message || "Something went wrong");
+      }
+    } catch {
+      Alert.alert("Error", "Network error");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <Text style={{ color: C.white, fontSize: 22, fontWeight: "700", marginBottom: 24 }}>Reset Password</Text>
+      <InputField placeholder="New Password" value={pass.new} onChangeText={(v) => setPass((p) => ({ ...p, new: v }))} secureTextEntry />
+      <InputField placeholder="Confirm Password" value={pass.confirm} onChangeText={(v) => setPass((p) => ({ ...p, confirm: v }))} secureTextEntry />
+      <Btn title={loading ? "Saving..." : "Save Changes"} onPress={handleReset} disabled={loading} />
+      <TouchableOpacity onPress={onBack} style={{ marginTop: 16 }}>
+        <Text style={{ color: C.gray, textAlign: "center" }}>← Back</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
-//FORGET PASSWORD 
-function ForgetPasswordScreen({ onBack }) {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!username || !email || !newPassword || !confirmPassword) { Alert.alert("Error", "Please fill all fields"); return; }
-    if (newPassword !== confirmPassword) { Alert.alert("Error", "Passwords do not match"); return; }
-    setLoading(true);
-    const res = await authAPI.forgetPassword({ name: username, email, newPassword });
-    setLoading(false);
-    if (res.message === "Password reset successful") { Alert.alert("Success", "Password updated! Please login."); onBack(); }
-    else { Alert.alert("Error", res.message || "Something went wrong"); }
-  };
-
+function Categories({ categories, selected, setSelected }) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.appTitle}>Forget Password</Text>
-      <TextInput placeholder="Username" placeholderTextColor="#94a3b8" style={styles.input} onChangeText={setUsername} />
-      <TextInput placeholder="Email" placeholderTextColor="#94a3b8" style={styles.input} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput placeholder="New Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} onChangeText={setNewPassword} />
-      <TextInput placeholder="Confirm Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} onChangeText={setConfirmPassword} />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Update Password</Text>}
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, { backgroundColor: "transparent", borderWidth: 1, borderColor: "#38bdf8" }]} onPress={onBack}>
-        <Text style={styles.buttonText}>Back to Login</Text>
-      </TouchableOpacity>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+      {["All", ...categories].map((c, i) => (
+        <TouchableOpacity
+          key={i}
+          onPress={() => setSelected(c)}
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 40,
+            marginRight: 8,
+            backgroundColor: selected === c ? C.accent : "rgba(255,255,255,0.08)",
+            borderWidth: 1,
+            borderColor: selected === c ? C.accent : C.border,
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 13 }}>{c}</Text>
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 }
 
-//DASHBOARD 
-function DashboardScreen({ user, setPage, onSwapAccepted }) {
+function ProductCard({ product, user, products, setProducts, onEdit, addToCart, removeFromCart, cartItems }) {
+  const isOwner = product.ownerEmail === user.email;
+  const inCart = cartItems && cartItems.some((i) => i._id === product._id);
+  const [swapModal, setSwapModal] = useState(false);
+  const [myProducts, setMyProducts] = useState([]);
+
+  const loadMyProducts = async () => {
+    const data = await productsAPI.getByEmail(user.email);
+    setMyProducts(data.filter((p) => p.status === "Approved" && p._id !== product._id));
+    setSwapModal(true);
+  };
+
+  const sendSwap = async (offered) => {
+    const res = await swapAPI.send({
+      targetProductId: product._id,
+      targetProductName: product.name,
+      targetOwnerEmail: product.ownerEmail,
+      requesterEmail: user.email,
+      offeredProduct: { name: offered.name, _id: offered._id },
+    });
+    if (res._id) {
+      Alert.alert("Success", "Swap request sent!");
+    } else {
+      Alert.alert("Error", res.message || "Failed");
+    }
+    setSwapModal(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert("Delete", "Are you sure?", [
+      { text: "Cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await productsAPI.delete(product._id);
+          setProducts(products.filter((p) => p._id !== product._id));
+        },
+      },
+    ]);
+  };
+
+  const handleBuy = async () => {
+    const res = await productsAPI.buy(product._id);
+    if (res.message) Alert.alert("Info", res.message);
+    else {
+      setProducts(products.map((p) => (p._id === product._id ? { ...p, status: "Sold" } : p)));
+      Alert.alert("Success", "Purchased!");
+    }
+  };
+
+  const statusColor = product.status === "Approved" ? C.green : product.status === "Pending" ? C.yellow : product.status === "Sold" ? C.gray : product.status === "Swapped" ? C.accent : C.red;
+
+  return (
+    <View style={styles.card}>
+      {product.image ? (
+        <Image source={{ uri: product.image }} style={{ width: "100%", height: 140, borderRadius: 10, marginBottom: 10 }} resizeMode="cover" />
+      ) : (
+        <View style={{ width: "100%", height: 100, backgroundColor: "rgba(0,171,240,0.1)", borderRadius: 10, marginBottom: 10, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ fontSize: 30 }}>📦</Text>
+        </View>
+      )}
+      <Text style={{ color: C.white, fontWeight: "700", fontSize: 15, marginBottom: 4 }}>{product.name}</Text>
+      <Text style={{ color: C.gray, fontSize: 12, marginBottom: 6 }}>{product.description}</Text>
+      <Text style={{ color: C.accent, fontWeight: "700", fontSize: 15, marginBottom: 4 }}>${product.price}</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+        <Text style={{ color: C.gray, fontSize: 11 }}>{product.category}</Text>
+        <Text style={{ color: statusColor, fontSize: 11, fontWeight: "600" }}>{product.status}</Text>
+      </View>
+
+      {isOwner ? (
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {onEdit && <Btn title="Edit" onPress={() => onEdit(product)} style={{ flex: 1 }} />}
+          <Btn title="Delete" onPress={handleDelete} color={C.red} style={{ flex: 1 }} />
+        </View>
+      ) : product.status === "Approved" ? (
+        <View style={{ gap: 8 }}>
+          <Btn title="Buy" onPress={handleBuy} color={C.green} />
+          <Btn
+            title={inCart ? "Remove from Cart" : "Add to Cart"}
+            onPress={() => inCart ? removeFromCart && removeFromCart(product._id) : addToCart && addToCart(product)}
+            color={inCart ? C.yellow : C.accent}
+          />
+          <Btn title="Request Swap" onPress={loadMyProducts} color="#534AB7" />
+        </View>
+      ) : null}
+
+      {/* Swap Modal */}
+      <Modal visible={swapModal} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: C.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" }}>
+            <Text style={{ color: C.white, fontSize: 16, fontWeight: "700", marginBottom: 14 }}>Choose a product to offer</Text>
+            {myProducts.length === 0 ? (
+              <Text style={{ color: C.gray }}>No approved products to swap</Text>
+            ) : (
+              <FlatList
+                data={myProducts}
+                keyExtractor={(i) => i._id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => sendSwap(item)} style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: C.border }}>
+                    <Text style={{ color: C.white }}>{item.name}</Text>
+                    <Text style={{ color: C.gray, fontSize: 12 }}>${item.price}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <Btn title="Cancel" onPress={() => setSwapModal(false)} color={C.red} style={{ marginTop: 12 }} />
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const defaultCategories = ["Electronics", "Books", "Clothes", "bags", "Other"];
+
+function ProductModal({ visible, onClose, user, products, setProducts, editProduct }) {
+  const [form, setForm] = useState({ name: "", description: "", price: "", category: "Other", image: "" });
+  const [loading, setLoading] = useState(false);
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (editProduct) {
+      setForm({
+        name: editProduct.name || "",
+        description: editProduct.description || "",
+        price: String(editProduct.price || ""),
+        category: editProduct.category || "Other",
+        image: editProduct.image || "",
+      });
+    } else {
+      setForm({ name: "", description: "", price: "", category: "Other", image: "" });
+    }
+  }, [editProduct, visible]);
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.price) {
+      Alert.alert("Error", "Name and price are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const payload = { ...form, price: Number(form.price), ownerEmail: user.email, ownerName: user.name };
+      if (editProduct) {
+        const res = await productsAPI.update(editProduct._id, payload);
+        setProducts(products.map((p) => (p._id === editProduct._id ? res : p)));
+      } else {
+        const res = await productsAPI.create(payload);
+        if (res._id) setProducts([...products, res]);
+      }
+      onClose();
+    } catch {
+      Alert.alert("Error", "Network error");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" }}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={{ backgroundColor: C.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 }}>
+            <Text style={{ color: C.white, fontSize: 18, fontWeight: "700", marginBottom: 16 }}>
+              {editProduct ? "Edit Product" : "Add Product"}
+            </Text>
+            <ScrollView>
+              <InputField placeholder="Product Name" value={form.name} onChangeText={(v) => set("name", v)} />
+              <InputField placeholder="Description" value={form.description} onChangeText={(v) => set("description", v)} />
+              <InputField placeholder="Price" value={form.price} onChangeText={(v) => set("price", v)} keyboardType="numeric" />
+              <InputField placeholder="Image URL (optional)" value={form.image} onChangeText={(v) => set("image", v)} />
+              <Text style={{ color: C.gray, marginBottom: 8, fontSize: 13 }}>Category</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {defaultCategories.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    onPress={() => set("category", c)}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 40,
+                      marginRight: 8,
+                      backgroundColor: form.category === c ? C.accent : "rgba(255,255,255,0.08)",
+                      borderWidth: 1,
+                      borderColor: form.category === c ? C.accent : C.border,
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 13 }}>{c}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Btn title={loading ? "Saving..." : editProduct ? "Update" : "Add Product"} onPress={handleSubmit} disabled={loading} />
+              <Btn title="Cancel" onPress={onClose} color={C.red} style={{ marginTop: 8, marginBottom: 10 }} />
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
+  );
+}
+
+
+function Dashboard({ user, addToCart, removeFromCart, cartItems }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState("All");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [swapModal, setSwapModal] = useState(null); 
-  const [swapForm, setSwapForm] = useState({ name: "", description: "", image: "", price: "", condition: "" });
-  const [swapSent, setSwapSent] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    (async () => {
       setLoading(true);
       const data = await productsAPI.getAll();
-      const approved = data.filter((p) => p.status === "Approved");
+      const approved = Array.isArray(data) ? data.filter((p) => p.status === "Approved") : [];
       setProducts(approved);
-      const cats = [...new Set(approved.map((p) => p.category))];
-      setCategories(cats);
+      setCategories([...new Set(approved.map((p) => p.category))]);
       setLoading(false);
-    };
-    fetchProducts();
+    })();
   }, []);
 
   const filtered = products
     .filter((p) => selected === "All" || p.category === selected)
     .filter((p) =>
       !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.description?.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase()) ||
+      p.category?.toLowerCase().includes(search.toLowerCase()) ||
       String(p.price).includes(search)
     );
 
-  const buyProduct = async (id) => {
-    const res = await productsAPI.buy(id);
-    if (res._id) {
-      setProducts(products.map((p) => p._id === id ? { ...p, isbuyer: true } : p));
-    } else {
-      Alert.alert("Error", res.message || "Failed to buy");
-    }
-  };
-
-  const sendSwap = async () => {
-    if (!swapForm.name) { Alert.alert("Error", "Please enter your product name"); return; }
-    const res = await swapAPI.send({
-      targetProductId: swapModal._id,
-      targetProductName: swapModal.name,
-      targetOwnerEmail: swapModal.ownerEmail,
-      requesterEmail: user.email,
-      offeredProduct: swapForm,
-    });
-    if (res._id) { setSwapSent(true); }
-    else { Alert.alert("Error", res.message || "Failed to send swap request"); }
-  };
-
-  const closeSwap = () => {
-    setSwapModal(null);
-    setSwapSent(false);
-    setSwapForm({ name: "", description: "", image: "", price: "", condition: "" });
-  };
-
-  const isAdmin =
-    hasPermission(user, "canGivePermissionToUser") ||
-    hasPermission(user, "canApproveOrRejectProducts") ||
-    hasPermission(user, "canShowAllUsersDetails") ||
-    hasPermission(user, "canDeleteApprovedProduct");
-
-  const conditionOptions = [
-    { label: "Like New", value: "Like New" },
-    { label: "Good", value: "Good" },
-    { label: "Fair", value: "Fair" },
-    { label: "Used", value: "Used" },
-  ];
-
-  if (loading) return <ActivityIndicator color="#38bdf8" style={{ flex: 1 }} />;
+  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator color={C.accent} size="large" /></View>;
 
   return (
-    <ScrollView style={styles.screen}>
-      <View style={styles.dashHeader}>
-        <Text style={styles.welcomeText}>Welcome, {user.name}! 👋</Text>
-        {isAdmin && (
-          <TouchableOpacity style={styles.adminBtn} onPress={() => setPage("admin")}>
-            <Text style={styles.adminBtnText}>Admin Panel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.searchContainer}>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>Available Products</Text>
+      <View style={{ position: "relative", marginBottom: 14 }}>
         <TextInput
-          placeholder="Search by name, category or price..."
-          placeholderTextColor="#64748b"
-          style={styles.searchInput}
+          placeholder="Search products..."
+          placeholderTextColor={C.gray}
           value={search}
           onChangeText={setSearch}
+          style={{
+            backgroundColor: "rgba(255,255,255,0.06)",
+            borderWidth: 1.5,
+            borderColor: C.border,
+            borderRadius: 40,
+            color: C.white,
+            paddingHorizontal: 18,
+            paddingVertical: 11,
+            paddingRight: 44,
+            fontSize: 13,
+          }}
         />
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Text style={{ position: "absolute", right: 16, top: 11, fontSize: 16 }}>🔍</Text>
       </View>
-      {search ? <Text style={styles.searchResult}>{filtered.length} result{filtered.length !== 1 ? "s" : ""} found</Text> : null}
-
-      {/* Categories */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryBar}>
-        <TouchableOpacity style={[styles.categoryBtn, selected === "All" && styles.categoryBtnActive]} onPress={() => setSelected("All")}>
-          <Text style={styles.categoryBtnText}>All</Text>
-        </TouchableOpacity>
-        {categories.map((c, i) => (
-          <TouchableOpacity key={i} style={[styles.categoryBtn, selected === c && styles.categoryBtnActive]} onPress={() => setSelected(c)}>
-            <Text style={styles.categoryBtnText}>{c}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <Text style={styles.sectionTitle}>Available Products</Text>
-      {filtered.length === 0 ? (
-        <Text style={styles.emptyText}>{search ? "No products match your search" : "No products available"}</Text>
-      ) : (
-        filtered.map((p) => (
-          <View key={p._id} style={styles.productCard}>
-            {p.image ? <Image source={{ uri: p.image }} style={styles.productImage} /> : null}
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>{p.name}</Text>
-              <Text style={styles.productDesc}>{p.description}</Text>
-              <Text style={styles.productPrice}>💰 ${p.price}</Text>
-              <Text style={styles.productCategory}>📦 {p.category}</Text>
-              <Text style={[styles.productStatus, { color: p.isbuyer ? "#ef4444" : "#22c55e" }]}>
-                {p.isbuyer ? "Sold Out" : "Available"}
-              </Text>
-              {p.ownerEmail !== user.email && !p.isbuyer && (
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                  <TouchableOpacity style={styles.buyBtn} onPress={() => buyProduct(p._id)}>
-                    <Text style={styles.buyBtnText}>Buy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.swapBtn} onPress={() => setSwapModal(p)}>
-                    <Text style={styles.swapBtnText}>⇄ Swap</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
-        ))
-      )}
-      <Modal visible={!!swapModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            {swapSent ? (
-              <View style={{ alignItems: "center", padding: 20 }}>
-                <Text style={{ fontSize: 36, marginBottom: 10 }}>✅</Text>
-                <Text style={styles.modalTitle}>Swap request sent!</Text>
-                <Text style={{ color: "#94a3b8", fontSize: 13, marginBottom: 16, textAlign: "center" }}>
-                  The seller will review your offer and respond soon.
-                </Text>
-                <TouchableOpacity style={styles.button} onPress={closeSwap}>
-                  <Text style={styles.buttonText}>Done</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                <Text style={styles.modalTitle}>⇄ Swap Request</Text>
-                <Text style={{ color: "#94a3b8", fontSize: 12, marginBottom: 12 }}>
-                  You want: <Text style={{ color: "#38bdf8" }}>{swapModal?.name}</Text> from {swapModal?.ownerEmail}
-                </Text>
-                <TextInput placeholder="Your product name *" placeholderTextColor="#94a3b8" style={styles.input} value={swapForm.name} onChangeText={(v) => setSwapForm({ ...swapForm, name: v })} />
-                <TextInput placeholder="Description" placeholderTextColor="#94a3b8" style={[styles.input, { height: 80 }]} value={swapForm.description} onChangeText={(v) => setSwapForm({ ...swapForm, description: v })} multiline />
-                <TextInput placeholder="Image URL" placeholderTextColor="#94a3b8" style={styles.input} value={swapForm.image} onChangeText={(v) => setSwapForm({ ...swapForm, image: v })} />
-                <TextInput placeholder="Estimated value ($)" placeholderTextColor="#94a3b8" style={styles.input} value={swapForm.price} onChangeText={(v) => setSwapForm({ ...swapForm, price: v })} keyboardType="numeric" />
-                <Dropdown style={styles.dropdown} placeholderStyle={styles.placeholderStyle} selectedTextStyle={styles.selectedTextStyle}
-                  data={conditionOptions} labelField="label" valueField="value" placeholder="Condition"
-                  value={swapForm.condition} onChange={(item) => setSwapForm({ ...swapForm, condition: item.value })} />
-                <TouchableOpacity style={styles.button} onPress={sendSwap}>
-                  <Text style={styles.buttonText}>Send Offer</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, { backgroundColor: "transparent", borderWidth: 1, borderColor: "#38bdf8" }]} onPress={closeSwap}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
-    </ScrollView>
+      {search ? <Text style={{ color: C.gray, fontSize: 11, marginBottom: 8 }}>{filtered.length} result{filtered.length !== 1 ? "s" : ""} found</Text> : null}
+      <Categories categories={categories} selected={selected} setSelected={setSelected} />
+      <FlatList
+        data={filtered}
+        keyExtractor={(i) => i._id}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            user={user}
+            products={products}
+            setProducts={setProducts}
+            onEdit={null}
+            addToCart={addToCart}
+            removeFromCart={removeFromCart}
+            cartItems={cartItems}
+          />
+        )}
+        ListEmptyComponent={<Text style={{ color: C.gray, textAlign: "center", marginTop: 40 }}>No products found</Text>}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }
 
-// ORDERS 
-function OrdersScreen({ user, onSwapAccepted }) {
+
+function ProductsPage({ user, addToCart }) {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selected, setSelected] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState(null);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    const data = user.role === "admin" ? await productsAPI.getAll() : await productsAPI.getByEmail(user.email);
+    const arr = Array.isArray(data) ? data : [];
+    setProducts(arr);
+    setCategories([...new Set(arr.map((p) => p.category))]);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchProducts(); }, []);
+
+  const filtered = selected === "All" ? products : products.filter((p) => p.category === selected);
+
+  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator color={C.accent} size="large" /></View>;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>My Products</Text>
+      <Categories categories={categories} selected={selected} setSelected={setSelected} />
+      {user.role !== "admin" && (
+        <Btn title="+ Add Product" onPress={() => { setEditProduct(null); setModalOpen(true); }} style={{ marginBottom: 14 }} />
+      )}
+      <FlatList
+        data={filtered}
+        keyExtractor={(i) => i._id}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            user={user}
+            products={products}
+            setProducts={setProducts}
+            onEdit={(p) => { setEditProduct(p); setModalOpen(true); }}
+            addToCart={addToCart}
+            cartItems={[]}
+          />
+        )}
+        ListEmptyComponent={<Text style={{ color: C.gray, textAlign: "center", marginTop: 40 }}>No products yet</Text>}
+        showsVerticalScrollIndicator={false}
+      />
+      <ProductModal
+        visible={modalOpen}
+        onClose={() => { setModalOpen(false); setEditProduct(null); }}
+        user={user}
+        products={products}
+        setProducts={setProducts}
+        editProduct={editProduct}
+      />
+    </View>
+  );
+}
+
+function OrdersPage({ user, onSwapAccepted }) {
   const [received, setReceived] = useState([]);
   const [sent, setSent] = useState([]);
   const [tab, setTab] = useState("received");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSwaps = async () => {
+    (async () => {
       setLoading(true);
-      const [rec, sen] = await Promise.all([
-        swapAPI.getReceived(user.email),
-        swapAPI.getSent(user.email),
-      ]);
-      setReceived(Array.isArray(rec) ? rec : []);
-      setSent(Array.isArray(sen) ? sen : []);
+      const [r, s] = await Promise.all([swapAPI.getReceived(user.email), swapAPI.getSent(user.email)]);
+      setReceived(Array.isArray(r) ? r : []);
+      setSent(Array.isArray(s) ? s : []);
       setLoading(false);
-    };
-    fetchSwaps();
-  }, [user]);
+    })();
+  }, []);
 
   const handleStatus = async (id, status) => {
     const res = await swapAPI.updateStatus(id, status);
     if (res._id) {
-      setReceived(received.map((s) => {
-        if (s._id === id) return { ...s, status };
-        if (status === "Accepted" && s.targetProductName === res.targetProductName && s.status === "Pending") {
-          return { ...s, status: "Rejected" };
-        }
-        return s;
-      }));
+      setReceived(received.map((s) => (s._id === id ? { ...s, status } : s)));
       if (status === "Accepted" && onSwapAccepted) onSwapAccepted();
     }
   };
 
   const handleDelete = async (id) => {
-    const res = await swapAPI.delete(id);
-    if (res.message) setSent(sent.filter((s) => s._id !== id));
+    await swapAPI.delete(id);
+    setSent(sent.filter((s) => s._id !== id));
   };
 
-  const statusColor = (s) =>
-    s === "Accepted" ? "#16a34a" : s === "Rejected" ? "#dc2626" : "#f59e0b";
+  const statusColor = (s) => s === "Accepted" ? C.green : s === "Rejected" ? C.red : C.yellow;
 
-  if (loading) return <ActivityIndicator color="#38bdf8" style={{ flex: 1 }} />;
+  const renderSwap = ({ item }) => (
+    <View style={[styles.card, { marginBottom: 10 }]}>
+      <Text style={{ color: C.white, fontWeight: "600", marginBottom: 4 }}>
+        {tab === "received" ? `From: ${item.requesterEmail}` : `To: ${item.targetOwnerEmail}`}
+      </Text>
+      <Text style={{ color: C.gray, fontSize: 12 }}>Target: {item.targetProductName}</Text>
+      <Text style={{ color: C.gray, fontSize: 12 }}>Offered: {item.offeredProduct?.name}</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+        <Text style={{ color: statusColor(item.status), fontWeight: "600" }}>{item.status}</Text>
+        {tab === "received" && item.status === "Pending" && (
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Btn title="Accept" onPress={() => handleStatus(item._id, "Accepted")} color={C.green} style={{ paddingHorizontal: 14, paddingVertical: 7 }} textStyle={{ fontSize: 12 }} />
+            <Btn title="Reject" onPress={() => handleStatus(item._id, "Rejected")} color={C.red} style={{ paddingHorizontal: 14, paddingVertical: 7 }} textStyle={{ fontSize: 12 }} />
+          </View>
+        )}
+        {tab === "sent" && item.status === "Pending" && (
+          <Btn title="Cancel" onPress={() => handleDelete(item._id)} color={C.red} style={{ paddingHorizontal: 14, paddingVertical: 7 }} textStyle={{ fontSize: 12 }} />
+        )}
+      </View>
+    </View>
+  );
+
+  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator color={C.accent} size="large" /></View>;
 
   return (
-    <ScrollView style={styles.screen}>
-      <Text style={styles.sectionTitle}>Swap Requests</Text>
-
-      {/* Tabs */}
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>Orders</Text>
+      <View style={{ flexDirection: "row", marginBottom: 16, gap: 10 }}>
         {["received", "sent"].map((t) => (
           <TouchableOpacity
             key={t}
-            style={[styles.categoryBtn, tab === t && styles.categoryBtnActive, { flex: 1, alignItems: "center" }]}
             onPress={() => setTab(t)}
+            style={{
+              flex: 1,
+              paddingVertical: 10,
+              borderRadius: 40,
+              borderWidth: 1.5,
+              borderColor: tab === t ? C.accent : C.border,
+              backgroundColor: tab === t ? C.accent : "transparent",
+              alignItems: "center",
+            }}
           >
-            <Text style={styles.categoryBtnText}>
-              {t === "received" ? `Received (${received.length})` : `Sent (${sent.length})`}
-            </Text>
+            <Text style={{ color: "#fff", textTransform: "capitalize", fontWeight: "600" }}>{t}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
-      {/* Received */}
-      {tab === "received" && (
-        received.length === 0 ? <Text style={styles.emptyText}>No swap requests received</Text> :
-          received.map((s) => (
-            <View key={s._id} style={styles.adminCard}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productName}>For: {s.targetProductName}</Text>
-                  <Text style={styles.productDesc}>From: {s.requesterEmail}</Text>
-                  <Text style={{ color: "#fff", marginTop: 6 }}>Offering: <Text style={{ color: "#38bdf8" }}>{s.offeredProduct?.name}</Text></Text>
-                  {s.offeredProduct?.description ? <Text style={styles.productDesc}>{s.offeredProduct.description}</Text> : null}
-                  {s.offeredProduct?.price ? <Text style={styles.productDesc}>Value: ${s.offeredProduct.price}</Text> : null}
-                  {s.offeredProduct?.condition ? <Text style={styles.productDesc}>Condition: {s.offeredProduct.condition}</Text> : null}
-                  {s.offeredProduct?.image ? <Image source={{ uri: s.offeredProduct.image }} style={{ width: 60, height: 60, borderRadius: 8, marginTop: 8 }} /> : null}
-                </View>
-                <View style={{ backgroundColor: statusColor(s.status), paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
-                  <Text style={{ color: "#fff", fontSize: 11, fontWeight: "bold" }}>{s.status}</Text>
-                </View>
-              </View>
-              {s.status === "Pending" && (
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-                  <TouchableOpacity style={[styles.approveBtn, { flex: 1 }]} onPress={() => handleStatus(s._id, "Accepted")}>
-                    <Text style={styles.actionBtnText}>Accept</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.rejectBtn, { flex: 1 }]} onPress={() => handleStatus(s._id, "Rejected")}>
-                    <Text style={styles.actionBtnText}>Reject</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          ))
-      )}
-
-      {/* Sent */}
-      {tab === "sent" && (
-        sent.length === 0 ? <Text style={styles.emptyText}>No swap requests sent</Text> :
-          sent.map((s) => (
-            <View key={s._id} style={styles.adminCard}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productName}>For: {s.targetProductName}</Text>
-                  <Text style={styles.productDesc}>To: {s.targetOwnerEmail}</Text>
-                  <Text style={{ color: "#fff", marginTop: 6 }}>You offered: <Text style={{ color: "#38bdf8" }}>{s.offeredProduct?.name}</Text></Text>
-                </View>
-                <View style={{ backgroundColor: statusColor(s.status), paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
-                  <Text style={{ color: "#fff", fontSize: 11, fontWeight: "bold" }}>{s.status}</Text>
-                </View>
-              </View>
-              {s.status === "Pending" && (
-                <TouchableOpacity style={[styles.deleteBtn, { marginTop: 10 }]} onPress={() => handleDelete(s._id)}>
-                  <Text style={styles.deleteBtnText}>Cancel Request</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))
-      )}
-    </ScrollView>
-  );
-}
-
-// PRODUCTS 
-function ProductsScreen({ user, refreshKey }) {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editProduct, setEditProduct] = useState(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [image, setImage] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const categories = [
-    { label: "Electronics", value: "Electronics" },
-    { label: "Books", value: "Books" },
-    { label: "Clothes", value: "Clothes" },
-    { label: "Bags", value: "bags" },
-    { label: "Other", value: "Other" },
-  ];
-
-  useEffect(() => { fetchProducts(); }, [refreshKey]); 
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    const data = await productsAPI.getByEmail(user.email);
-    setProducts(data);
-    setLoading(false);
-  };
-
-  const openAdd = () => {
-    setEditProduct(null);
-    setName(""); setDescription(""); setPrice(""); setCategory(""); setImage("");
-    setModalOpen(true);
-  };
-
-  const openEdit = (product) => {
-    if (product.status !== "Pending") { Alert.alert("Error", "Cannot edit approved or rejected product"); return; }
-    setEditProduct(product);
-    setName(product.name); setDescription(product.description);
-    setPrice(String(product.price)); setCategory(product.category); setImage(product.image);
-    setModalOpen(true);
-  };
-
-  const save = async () => {
-    if (!name || !price || !category || !image) { Alert.alert("Error", "Please fill all fields"); return; }
-    setSaving(true);
-    if (editProduct) {
-      const res = await productsAPI.update(editProduct._id, { name, description, price: Number(price), category, image });
-      if (res._id) { setProducts(products.map((p) => p._id === res._id ? res : p)); setModalOpen(false); }
-      else { Alert.alert("Error", res.message || "Failed to update product"); }
-    } else {
-      const res = await productsAPI.create({ name, description, price: Number(price), category, image, status: "Pending", ownerEmail: user.email, isbuyer: false });
-      if (res._id) { setProducts([...products, res]); setModalOpen(false); }
-      else { Alert.alert("Error", "Failed to create product"); }
-    }
-    setSaving(false);
-  };
-
-  const deleteProduct = async (id) => {
-    Alert.alert("Confirm", "Delete this product?", [
-      { text: "Cancel" },
-      { text: "Delete", style: "destructive", onPress: async () => {
-        const res = await productsAPI.delete(id);
-        if (res.message === "Product deleted successfully") setProducts(products.filter((p) => p._id !== id));
-      }}
-    ]);
-  };
-
-  if (loading) return <ActivityIndicator color="#38bdf8" style={{ flex: 1 }} />;
-
-  return (
-    <View style={styles.screen}>
-      <TouchableOpacity style={styles.addBtn} onPress={openAdd}>
-        <Text style={styles.addBtnText}>+ Add Product</Text>
-      </TouchableOpacity>
-      <ScrollView>
-        {products.length === 0 ? <Text style={styles.emptyText}>No products yet</Text> : (
-          products.map((p) => (
-            <View key={p._id} style={styles.productCard}>
-              {p.image ? <Image source={{ uri: p.image }} style={styles.productImage} /> : null}
-              <View style={styles.productInfo}>
-                <Text style={styles.productName}>{p.name}</Text>
-                <Text style={styles.productDesc}>{p.description}</Text>
-                <Text style={styles.productPrice}>💰 ${p.price}</Text>
-                <Text style={styles.productCategory}>📦 {p.category}</Text>
-                <Text style={{ color: p.status === "Approved" ? "#22c55e" : p.status === "Rejected" ? "#ef4444" : "#f59e0b", fontSize: 12 }}>
-                  Status: {p.status}
-                </Text>
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                  {p.status === "Pending" && (
-                    <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(p)}>
-                      <Text style={styles.editBtnText}>Edit</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteProduct(p._id)}>
-                    <Text style={styles.deleteBtnText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
-      <Modal visible={modalOpen} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{editProduct ? "Edit Product" : "Add Product"}</Text>
-            <TextInput placeholder="Name" placeholderTextColor="#94a3b8" style={styles.input} value={name} onChangeText={setName} />
-            <TextInput placeholder="Description" placeholderTextColor="#94a3b8" style={[styles.input, { height: 80 }]} value={description} onChangeText={setDescription} multiline />
-            <TextInput placeholder="Image URL" placeholderTextColor="#94a3b8" style={styles.input} value={image} onChangeText={setImage} />
-            <TextInput placeholder="Price" placeholderTextColor="#94a3b8" style={styles.input} value={price} onChangeText={setPrice} keyboardType="numeric" />
-            <Dropdown style={styles.dropdown} placeholderStyle={styles.placeholderStyle} selectedTextStyle={styles.selectedTextStyle} data={categories} labelField="label" valueField="value" placeholder="Select Category" value={category} onChange={(item) => setCategory(item.value)} />
-            <TouchableOpacity style={styles.button} onPress={save} disabled={saving}>
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{editProduct ? "Update" : "Save"}</Text>}
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "transparent", borderWidth: 1, borderColor: "#38bdf8" }]} onPress={() => setModalOpen(false)}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-      </Modal>
+      <FlatList
+        data={tab === "received" ? received : sent}
+        keyExtractor={(i) => i._id}
+        renderItem={renderSwap}
+        ListEmptyComponent={<Text style={{ color: C.gray, textAlign: "center", marginTop: 40 }}>No swaps</Text>}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
 
-//SETTINGS
-function SettingsScreen({ user }) {
-  const [showReset, setShowReset] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+function ChatPage() {
+  const [message, setMessage] = useState("");
+  const [chat, setChat] = useState([]);
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef(null);
 
-  const handleReset = async () => {
-    if (!newPassword || !confirmPassword) { Alert.alert("Error", "Please fill all fields"); return; }
-    if (newPassword !== confirmPassword) { Alert.alert("Error", "Passwords do not match"); return; }
+  const sendMessage = async () => {
+    if (!message.trim() || loading) return;
+    const userMsg = message;
+    setMessage("");
     setLoading(true);
-    const res = await authAPI.resetPassword({ email: user.email, newPassword });
+    setChat((prev) => [...prev, { user: userMsg, bot: null }]);
+    try {
+      const res = await fetch(`${BASE_URL.replace("/api", "")}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg }),
+      });
+      const data = await res.json();
+      setChat((prev) =>
+        prev.map((c, i) => (i === prev.length - 1 ? { ...c, bot: data.reply } : c))
+      );
+    } catch {
+      setChat((prev) =>
+        prev.map((c, i) => (i === prev.length - 1 ? { ...c, bot: "⚠️ Failed to connect to server" } : c))
+      );
+    }
     setLoading(false);
-    if (res.message === "Password reset successful") {
-      Alert.alert("Success", "Password updated!");
-      setShowReset(false); setNewPassword(""); setConfirmPassword("");
-    } else { Alert.alert("Error", res.message || "Something went wrong"); }
   };
 
   return (
-    <ScrollView style={styles.screen}>
-      <Text style={styles.sectionTitle}>Settings</Text>
-      <View style={styles.settingsCard}>
-        <Text style={styles.settingsLabel}>Name: {user.name}</Text>
-        <Text style={styles.settingsLabel}>Email: {user.email}</Text>
-        <Text style={styles.settingsLabel}>Role: {user.role}</Text>
-      </View>
-      <TouchableOpacity style={styles.addBtn} onPress={() => setShowReset(!showReset)}>
-        <Text style={styles.addBtnText}>Reset Password</Text>
-      </TouchableOpacity>
-      {showReset && (
-        <View style={styles.settingsCard}>
-          <TextInput placeholder="New Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} value={newPassword} onChangeText={setNewPassword} />
-          <TextInput placeholder="Confirm Password" placeholderTextColor="#94a3b8" secureTextEntry style={styles.input} value={confirmPassword} onChangeText={setConfirmPassword} />
-          <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Save Changes</Text>}
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>💬 AI Chat</Text>
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1 }}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+      >
+        {chat.length === 0 && (
+          <Text style={{ color: C.gray, textAlign: "center", marginTop: 60 }}>🤖 Start the conversation...</Text>
+        )}
+        {chat.map((c, i) => (
+          <View key={i}>
+            <View style={[chatStyles.bubble, chatStyles.userBubble]}>
+              <Text style={{ color: "#fff", fontSize: 14 }}>{c.user}</Text>
+            </View>
+            <View style={[chatStyles.bubble, chatStyles.botBubble]}>
+              {c.bot === null ? (
+                <Text style={{ color: "#999", fontStyle: "italic", fontSize: 13 }}>thinking...</Text>
+              ) : (
+                <Text style={{ color: "#333", fontSize: 14 }}>{c.bot}</Text>
+              )}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <View style={{ flexDirection: "row", gap: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: C.border }}>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            onSubmitEditing={sendMessage}
+            placeholder="Type your message..."
+            placeholderTextColor={C.gray}
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(255,255,255,0.06)",
+              borderWidth: 1.5,
+              borderColor: C.border,
+              borderRadius: 40,
+              color: C.white,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              fontSize: 14,
+            }}
+          />
+          <TouchableOpacity
+            onPress={sendMessage}
+            disabled={loading}
+            style={{ backgroundColor: "#534AB7", borderRadius: 40, paddingHorizontal: 18, justifyContent: "center" }}
+          >
+            <Text style={{ color: "#fff", fontSize: 16 }}>➤</Text>
           </TouchableOpacity>
         </View>
-      )}
-    </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
-// ADMIN 
-function AdminScreen({ user }) {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (hasPermission(user, "canApproveOrRejectProducts")) return "pending";
-    if (hasPermission(user, "canShowAllUsersDetails")) return "users";
-    if (hasPermission(user, "canGivePermissionToUser")) return "permissions";
-    return "pending";
-  });
+const chatStyles = StyleSheet.create({
+  bubble: { maxWidth: "80%", padding: 10, borderRadius: 16, marginBottom: 6 },
+  userBubble: { alignSelf: "flex-end", backgroundColor: "#534AB7", borderBottomRightRadius: 4 },
+  botBubble: { alignSelf: "flex-start", backgroundColor: "#f4f4f4", borderBottomLeftRadius: 4 },
+});
+
+function SettingsPage({ user }) {
+  const [showReset, setShowReset] = useState(false);
+  if (showReset) return <ResetPage user={user} onBack={() => setShowReset(false)} />;
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>Settings</Text>
+      <View style={styles.card}>
+        <Text style={{ color: C.white, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>{user.name}</Text>
+        <Text style={{ color: C.gray, fontSize: 13, marginBottom: 2 }}>{user.email}</Text>
+        <Text style={{ color: C.accent, fontSize: 12, textTransform: "capitalize" }}>{user.role}</Text>
+      </View>
+      <Btn title="Reset Password" onPress={() => setShowReset(true)} style={{ marginTop: 16 }} />
+    </View>
+  );
+}
+
+
+function AdminPage({ user }) {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [tab, setTab] = useState("products");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       setLoading(true);
-      const prods = await productsAPI.getAll();
-      setProducts(prods);
-      const usersData = await authAPI.getUsers();
-      setUsers(usersData);
+      if (hasPermission(user, "canApproveOrRejectProducts") || hasPermission(user, "canDeleteApprovedProduct")) {
+        const p = await productsAPI.getAll();
+        setProducts(Array.isArray(p) ? p : []);
+      }
+      if (hasPermission(user, "canShowAllUsersDetails") || hasPermission(user, "canGivePermissionToUser")) {
+        const u = await authAPI.getUsers();
+        setUsers(Array.isArray(u) ? u : []);
+      }
       setLoading(false);
-    };
-    fetchData();
+    })();
   }, []);
 
-  const approve = async (id) => { await productsAPI.updateStatus(id, "Approved"); setProducts(products.map((p) => p._id === id ? { ...p, status: "Approved" } : p)); };
-  const reject = async (id) => { await productsAPI.updateStatus(id, "Rejected"); setProducts(products.map((p) => p._id === id ? { ...p, status: "Rejected" } : p)); };
-  const remove = async (id) => { await productsAPI.delete(id); setProducts(products.filter((p) => p._id !== id)); };
-
-  const togglePermission = async (userId, permission, hasIt) => {
-    if (userId === user.id) { Alert.alert("Error", "You cannot change your own permissions!"); return; }
-    const res = await authAPI.updatePermission(userId, { permission, action: hasIt ? "revoke" : "give" });
-    if (res._id) { setUsers(users.map((u) => u._id === userId ? { ...u, permissions: res.permissions } : u)); }
-    else { Alert.alert("Error", "Failed to update permission"); }
+  const handleApprove = async (id) => {
+    await productsAPI.approve(id);
+    setProducts(products.map((p) => (p._id === id ? { ...p, status: "Approved" } : p)));
   };
 
-  const pendingProducts = products.filter((p) => p.status === "Pending");
-  const approvedProducts = products.filter((p) => p.status === "Approved");
+  const handleReject = async (id) => {
+    await productsAPI.reject(id);
+    setProducts(products.map((p) => (p._id === id ? { ...p, status: "Rejected" } : p)));
+  };
 
-  if (loading) return <ActivityIndicator color="#38bdf8" style={{ flex: 1 }} />;
+  const handleDeleteProduct = async (id) => {
+    await productsAPI.delete(id);
+    setProducts(products.filter((p) => p._id !== id));
+  };
 
-  return (
-    <ScrollView style={styles.screen}>
-      <Text style={styles.sectionTitle}>Admin Panel</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryBar}>
-        {hasPermission(user, "canApproveOrRejectProducts") && (
-          <TouchableOpacity style={[styles.categoryBtn, activeTab === "pending" && styles.categoryBtnActive]} onPress={() => setActiveTab("pending")}>
-            <Text style={styles.categoryBtnText}>Pending</Text>
-          </TouchableOpacity>
-        )}
-        {hasPermission(user, "canDeleteApprovedProduct") && (
-          <TouchableOpacity style={[styles.categoryBtn, activeTab === "approved" && styles.categoryBtnActive]} onPress={() => setActiveTab("approved")}>
-            <Text style={styles.categoryBtnText}>Approved</Text>
-          </TouchableOpacity>
-        )}
-        {hasPermission(user, "canShowAllUsersDetails") && (
-          <TouchableOpacity style={[styles.categoryBtn, activeTab === "users" && styles.categoryBtnActive]} onPress={() => setActiveTab("users")}>
-            <Text style={styles.categoryBtnText}>Users</Text>
-          </TouchableOpacity>
-        )}
-        {hasPermission(user, "canGivePermissionToUser") && (
-          <TouchableOpacity style={[styles.categoryBtn, activeTab === "permissions" && styles.categoryBtnActive]} onPress={() => setActiveTab("permissions")}>
-            <Text style={styles.categoryBtnText}>Permissions</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+  const handlePermission = async (userId, permission, action) => {
+    const res = await authAPI.updatePermission(userId, permission, action);
+    if (res._id) setUsers(users.map((u) => (u._id === userId ? res : u)));
+    else Alert.alert("Error", res.message || "Failed");
+  };
 
-      {activeTab === "pending" && hasPermission(user, "canApproveOrRejectProducts") && (
-        pendingProducts.length === 0 ? <Text style={styles.emptyText}>No pending products</Text> :
-          pendingProducts.map((p) => (
-            <View key={p._id} style={styles.adminCard}>
-              <Text style={styles.productName}>{p.name}</Text>
-              <Text style={styles.productDesc}>${p.price} - {p.ownerEmail}</Text>
-              <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                <TouchableOpacity style={styles.approveBtn} onPress={() => approve(p._id)}><Text style={styles.actionBtnText}>Approve</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.rejectBtn} onPress={() => reject(p._id)}><Text style={styles.actionBtnText}>Reject</Text></TouchableOpacity>
-              </View>
-            </View>
-          ))
-      )}
+  const allPermissions = ["canApproveOrRejectProducts", "canDeleteApprovedProduct", "canShowAllUsersDetails", "canGivePermissionToUser"];
 
-      {activeTab === "approved" && hasPermission(user, "canDeleteApprovedProduct") && (
-        approvedProducts.length === 0 ? <Text style={styles.emptyText}>No approved products</Text> :
-          approvedProducts.map((p) => (
-            <View key={p._id} style={styles.adminCard}>
-              <Text style={styles.productName}>{p.name}</Text>
-              <Text style={styles.productDesc}>${p.price} - {p.ownerEmail}</Text>
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => remove(p._id)}><Text style={styles.deleteBtnText}>Remove</Text></TouchableOpacity>
-            </View>
-          ))
-      )}
-
-      {activeTab === "users" && hasPermission(user, "canShowAllUsersDetails") && (
-        users.length === 0 ? <Text style={styles.emptyText}>No users</Text> :
-          users.map((u) => (
-            <View key={u._id} style={styles.adminCard}>
-              <Text style={styles.productName}>{u.name}</Text>
-              <Text style={styles.productDesc}>{u.email} - {u.role}</Text>
-            </View>
-          ))
-      )}
-
-      {activeTab === "permissions" && hasPermission(user, "canGivePermissionToUser") && (
-        users.map((u) => {
-          const isMe = u._id === user.id;
-          const isProtected = u.email === ROOT_ADMIN_EMAIL;
-          return (
-            <View key={u._id} style={styles.adminCard}>
-              <Text style={styles.productName}>{u.name}</Text>
-              <Text style={styles.productDesc}>{u.email}</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-                {["canApproveOrRejectProducts", "canDeleteApprovedProduct", "canShowAllUsersDetails", "canGivePermissionToUser"].map((perm) => {
-                  const hasIt = u.permissions?.includes(perm);
-                  return (
-                    <TouchableOpacity key={perm}
-                      style={[styles.permBtn, { backgroundColor: hasIt ? "#dc2626" : "#16a34a", opacity: (isMe || isProtected) ? 0.4 : 1 }]}
-                      onPress={() => togglePermission(u._id, perm, hasIt)}
-                      disabled={isMe || isProtected}>
-                      <Text style={styles.actionBtnText}>{hasIt ? "Revoke" : "Give"}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          );
-        })
-      )}
-    </ScrollView>
-  );
-}
-
-//MAIN APP 
-function MainApp() {
-  const [user, setUser] = useState(null);
-  const [page, setPage] = useState("dashboard");
-  const [refreshKey, setRefreshKey] = useState(0); 
-  const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    if (!user?.id) return;
-    const interval = setInterval(async () => {
-      const res = await authAPI.getUsers();
-      const updatedUser = res.find((u) => u._id === user.id);
-      if (updatedUser && JSON.stringify(updatedUser.permissions) !== JSON.stringify(user.permissions)) {
-        setUser((prev) => ({ ...prev, permissions: updatedUser.permissions }));
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [user?.id]);
-
-  if (!user) {
-    return <AuthScreen onLogin={(u) => { setUser(u); setPage("dashboard"); }} />;
-  }
-
-  const navItems = [
-    { key: "dashboard", label: "🏠 Home" },
-    { key: "products", label: "📦 Products" },
-    { key: "orders", label: "🔄 Orders" }, 
-    { key: "settings", label: "⚙️ Settings" },
-  ];
+  if (loading) return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}><ActivityIndicator color={C.accent} size="large" /></View>;
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a" }}>
-      <View style={{ flex: 1, paddingTop: insets.top || 40 }}>
-        {page === "dashboard" && <DashboardScreen user={user} setPage={setPage} onSwapAccepted={() => setRefreshKey(k => k + 1)} />}
-        {page === "products" && <ProductsScreen user={user} refreshKey={refreshKey} />}
-        {page === "orders" && <OrdersScreen user={user} onSwapAccepted={() => setRefreshKey(k => k + 1)} />}
-        {page === "settings" && <SettingsScreen user={user} />}
-        {page === "admin" && <AdminScreen user={user} />}
-      </View>
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 6 }]}>
-        {navItems.map((item) => (
-          <TouchableOpacity key={item.key} style={[styles.navItem, page === item.key && styles.navItemActive]} onPress={() => setPage(item.key)}>
-            <Text style={[styles.navText, page === item.key && styles.navTextActive]}>{item.label}</Text>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.pageTitle}>Admin Panel</Text>
+      <View style={{ flexDirection: "row", marginBottom: 16, gap: 10 }}>
+        {["products", "users"].map((t) => (
+          <TouchableOpacity
+            key={t}
+            onPress={() => setTab(t)}
+            style={{
+              flex: 1,
+              paddingVertical: 10,
+              borderRadius: 40,
+              borderWidth: 1.5,
+              borderColor: tab === t ? C.accent : C.border,
+              backgroundColor: tab === t ? C.accent : "transparent",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", textTransform: "capitalize", fontWeight: "600" }}>{t}</Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity style={styles.navItem} onPress={() => setUser(null)}>
-          <Text style={styles.navText}>🚪 Logout</Text>
-        </TouchableOpacity>
       </View>
+
+      {tab === "products" && (
+        <FlatList
+          data={products}
+          keyExtractor={(i) => i._id}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={[styles.card, { marginBottom: 10 }]}>
+              <Text style={{ color: C.white, fontWeight: "600" }}>{item.name}</Text>
+              <Text style={{ color: C.gray, fontSize: 12, marginBottom: 4 }}>{item.ownerEmail}</Text>
+              <Text style={{ color: item.status === "Approved" ? C.green : item.status === "Pending" ? C.yellow : C.red, fontSize: 12, marginBottom: 8 }}>{item.status}</Text>
+              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                {hasPermission(user, "canApproveOrRejectProducts") && item.status === "Pending" && (
+                  <>
+                    <Btn title="Approve" onPress={() => handleApprove(item._id)} color={C.green} style={{ flex: 1, paddingVertical: 8 }} textStyle={{ fontSize: 12 }} />
+                    <Btn title="Reject" onPress={() => handleReject(item._id)} color={C.red} style={{ flex: 1, paddingVertical: 8 }} textStyle={{ fontSize: 12 }} />
+                  </>
+                )}
+                {hasPermission(user, "canDeleteApprovedProduct") && item.status === "Approved" && (
+                  <Btn title="Delete" onPress={() => handleDeleteProduct(item._id)} color={C.red} style={{ flex: 1, paddingVertical: 8 }} textStyle={{ fontSize: 12 }} />
+                )}
+              </View>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={{ color: C.gray, textAlign: "center", marginTop: 40 }}>No products</Text>}
+        />
+      )}
+
+      {tab === "users" && (
+        <FlatList
+          data={users}
+          keyExtractor={(i) => i._id}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={[styles.card, { marginBottom: 10 }]}>
+              <Text style={{ color: C.white, fontWeight: "600" }}>{item.name}</Text>
+              <Text style={{ color: C.gray, fontSize: 12, marginBottom: 8 }}>{item.email}</Text>
+              {hasPermission(user, "canGivePermissionToUser") && item.email !== "0@gmail.com" && (
+                <View>
+                  {allPermissions.map((perm) => {
+                    const hasPerm = item.permissions?.includes(perm);
+                    return (
+                      <View key={perm} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <Text style={{ color: C.gray, fontSize: 11, flex: 1 }}>{perm}</Text>
+                        <Btn
+                          title={hasPerm ? "Revoke" : "Give"}
+                          onPress={() => handlePermission(item._id, perm, hasPerm ? "revoke" : "give")}
+                          color={hasPerm ? C.red : C.green}
+                          style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+                          textStyle={{ fontSize: 11 }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          )}
+          ListEmptyComponent={<Text style={{ color: C.gray, textAlign: "center", marginTop: 40 }}>No users</Text>}
+        />
+      )}
     </View>
   );
 }
 
-export default function App() {
+
+function CartModal({ visible, onClose, cartItems, removeFromCart, user }) {
+  const handleBuy = async (item) => {
+    const res = await productsAPI.buy(item._id);
+    Alert.alert("Info", res.message || "Purchased!");
+    removeFromCart(item._id);
+  };
+
   return (
-    <SafeAreaProvider>
-      <MainApp />
-    </SafeAreaProvider>
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" }}>
+        <View style={{ backgroundColor: C.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" }}>
+          <Text style={{ color: C.white, fontSize: 18, fontWeight: "700", marginBottom: 14 }}>🛒 Cart ({cartItems.length})</Text>
+          {cartItems.length === 0 ? (
+            <Text style={{ color: C.gray, textAlign: "center", marginVertical: 20 }}>Cart is empty</Text>
+          ) : (
+            <FlatList
+              data={cartItems}
+              keyExtractor={(i) => i._id}
+              renderItem={({ item }) => (
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: C.white }}>{item.name}</Text>
+                    <Text style={{ color: C.accent }}>${item.price}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <Btn title="Buy" onPress={() => handleBuy(item)} color={C.green} style={{ paddingHorizontal: 12, paddingVertical: 7 }} textStyle={{ fontSize: 12 }} />
+                    <Btn title="Remove" onPress={() => removeFromCart(item._id)} color={C.red} style={{ paddingHorizontal: 12, paddingVertical: 7 }} textStyle={{ fontSize: 12 }} />
+                  </View>
+                </View>
+              )}
+            />
+          )}
+          <Btn title="Close" onPress={onClose} color={C.red} style={{ marginTop: 12 }} />
+        </View>
+      </View>
+    </Modal>
   );
 }
 
-// ===================== STYLES =====================
+
+const NAV_ITEMS = [
+  { key: "dashboard", label: "Home", icon: "🏠" },
+  { key: "products", label: "Products", icon: "📦" },
+  { key: "orders", label: "Orders", icon: "🔄" },
+  { key: "chat", label: "AI Chat", icon: "💬" },
+  { key: "settings", label: "Settings", icon: "⚙️" },
+];
+
+function BottomNav({ currentPage, setPage, cartCount, openCart, user }) {
+  const showAdmin =
+    hasPermission(user, "canGivePermissionToUser") ||
+    hasPermission(user, "canApproveOrRejectProducts") ||
+    hasPermission(user, "canShowAllUsersDetails") ||
+    hasPermission(user, "canDeleteApprovedProduct");
+
+  const items = showAdmin ? [...NAV_ITEMS, { key: "admin", label: "Admin", icon: "🛡️" }] : NAV_ITEMS;
+
+  return (
+    <View style={{ flexDirection: "row", backgroundColor: C.card, borderTopWidth: 1, borderTopColor: C.border, paddingBottom: Platform.OS === "ios" ? 20 : 6, paddingTop: 6 }}>
+      {items.map((item) => (
+        <TouchableOpacity
+          key={item.key}
+          onPress={() => setPage(item.key)}
+          style={{ flex: 1, alignItems: "center", paddingVertical: 6 }}
+        >
+          <Text style={{ fontSize: 20, marginBottom: 2 }}>{item.icon}</Text>
+          <Text style={{ color: currentPage === item.key ? C.accent : C.gray, fontSize: 10, fontWeight: currentPage === item.key ? "700" : "400" }}>
+            {item.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+      <TouchableOpacity onPress={openCart} style={{ flex: 1, alignItems: "center", paddingVertical: 6 }}>
+        <View style={{ position: "relative" }}>
+          <Text style={{ fontSize: 20, marginBottom: 2 }}>🛒</Text>
+          {cartCount > 0 && (
+            <View style={{ position: "absolute", top: -4, right: -6, backgroundColor: C.red, borderRadius: 10, width: 16, height: 16, justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: "#fff", fontSize: 9, fontWeight: "700" }}>{cartCount}</Text>
+            </View>
+          )}
+        </View>
+        <Text style={{ color: C.gray, fontSize: 10 }}>Cart</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("dashboard");
+  const [cartItems, setCartItems] = useState([]);
+  const [cartVisible, setCartVisible] = useState(false);
+
+  const addToCart = (product) => {
+    if (!cartItems.find((i) => i._id === product._id)) {
+      setCartItems([...cartItems, product]);
+    }
+  };
+
+  const removeFromCart = (id) => setCartItems(cartItems.filter((i) => i._id !== id));
+
+  const handleLogout = () => {
+    setUser(null);
+    setPage("dashboard");
+    setCartItems([]);
+  };
+
+  if (!user) return <AuthForm onLogin={setUser} />;
+
+  const renderPage = () => {
+    switch (page) {
+      case "dashboard":
+        return <Dashboard user={user} addToCart={addToCart} removeFromCart={removeFromCart} cartItems={cartItems} />;
+      case "products":
+        return <ProductsPage user={user} addToCart={addToCart} />;
+      case "orders":
+        return <OrdersPage user={user} />;
+      case "chat":
+        return <ChatPage />;
+      case "settings":
+        return <SettingsPage user={user} onLogout={handleLogout} />;
+      case "admin":
+        return <AdminPage user={user} />;
+      default:
+        return <Dashboard user={user} addToCart={addToCart} removeFromCart={removeFromCart} cartItems={cartItems} />;
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+
+      {/* Header */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border }}>
+        <Text style={{ color: C.accent, fontSize: 20, fontWeight: "700", letterSpacing: 2 }}>SWAPSTER</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Text style={{ color: C.gray, fontSize: 12 }}>{user.name}</Text>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={{ borderWidth: 1, borderColor: C.red, borderRadius: 40, paddingHorizontal: 12, paddingVertical: 5 }}
+          >
+            <Text style={{ color: C.red, fontSize: 12 }}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Page Content */}
+      <ScrollView style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }} showsVerticalScrollIndicator={false}>
+        {renderPage()}
+        <View style={{ height: 20 }} />
+      </ScrollView>
+
+      {/* Bottom Nav */}
+      <BottomNav
+        currentPage={page}
+        setPage={setPage}
+        cartCount={cartItems.length}
+        openCart={() => setCartVisible(true)}
+        user={user}
+      />
+
+      {/* Cart Modal */}
+      <CartModal
+        visible={cartVisible}
+        onClose={() => setCartVisible(false)}
+        cartItems={cartItems}
+        removeFromCart={removeFromCart}
+        user={user}
+      />
+    </SafeAreaView>
+  );
+}
+
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f172a" },
-  appTitle: { fontSize: 32, color: "#38bdf8", fontWeight: "bold", marginBottom: 30, letterSpacing: 3 },
-  switchContainer: { flexDirection: "row", marginBottom: 20 },
-  switchText: { color: "#94a3b8", marginHorizontal: 20, fontSize: 18 },
-  active: { color: "#38bdf8", fontWeight: "bold", borderBottomWidth: 2, borderBottomColor: "#38bdf8", paddingBottom: 4 },
-  overflowWrapper: { width, overflow: "hidden" },
-  formContainer: { flexDirection: "row", width: width * 2 },
-  form: { width, alignItems: "center" },
-  input: { width: "85%", backgroundColor: "#1e293b", padding: 12, marginVertical: 8, borderRadius: 10, color: "white", borderWidth: 1, borderColor: "#334155" },
-  dropdown: { width: "85%", backgroundColor: "#1e293b", borderRadius: 10, paddingHorizontal: 15, paddingVertical: 12, marginVertical: 8 },
-  placeholderStyle: { color: "#94a3b8", fontSize: 16 },
-  selectedTextStyle: { color: "white", fontSize: 16 },
-  button: { backgroundColor: "#38bdf8", padding: 13, borderRadius: 10, marginTop: 10, width: "85%", alignItems: "center" },
-  buttonText: { color: "white", fontWeight: "bold", fontSize: 15 },
-  forgotText: { color: "#38bdf8", fontSize: 13, marginTop: 4, marginBottom: 4 },
-  screen: { flex: 1, backgroundColor: "#0f172a", padding: 16 },
-  dashHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-  welcomeText: { fontSize: 20, color: "#fff", fontWeight: "bold" },
-  adminBtn: { backgroundColor: "#38bdf8", padding: 8, borderRadius: 8 },
-  adminBtnText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
-  searchContainer: { position: "relative", marginBottom: 12 },
-  searchInput: { backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(56,189,248,0.35)", borderRadius: 20, color: "#fff", fontSize: 13, padding: 12, paddingRight: 40 },
-  searchIcon: { position: "absolute", right: 12, top: 12, fontSize: 15 },
-  searchResult: { fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 8 },
-  categoryBar: { marginBottom: 16 },
-  categoryBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: "#38bdf8", marginRight: 8, backgroundColor: "transparent" },
-  categoryBtnActive: { backgroundColor: "#38bdf8" },
-  categoryBtnText: { color: "#fff", fontSize: 13 },
-  sectionTitle: { fontSize: 18, color: "#38bdf8", fontWeight: "bold", marginBottom: 12 },
-  emptyText: { color: "#94a3b8", textAlign: "center", marginTop: 20 },
-  productCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 12, marginBottom: 12, flexDirection: "row", borderWidth: 1, borderColor: "#334155" },
-  productImage: { width: 70, height: 70, borderRadius: 8, marginRight: 12 },
-  productInfo: { flex: 1 },
-  productName: { color: "#38bdf8", fontWeight: "bold", fontSize: 15, marginBottom: 4 },
-  productDesc: { color: "#94a3b8", fontSize: 12, marginBottom: 4 },
-  productPrice: { color: "#fff", fontSize: 13, marginBottom: 2 },
-  productCategory: { color: "#94a3b8", fontSize: 12, marginBottom: 2 },
-  productStatus: { fontSize: 12, marginBottom: 6 },
-  buyBtn: { backgroundColor: "#16a34a", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  buyBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
-  swapBtn: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#f59e0b", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  swapBtnText: { color: "#f59e0b", fontWeight: "bold", fontSize: 13 },
-  addBtn: { backgroundColor: "#38bdf8", padding: 12, borderRadius: 10, alignItems: "center", marginBottom: 16 },
-  addBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  editBtn: { backgroundColor: "#f59e0b", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  editBtnText: { color: "#000", fontWeight: "bold", fontSize: 13 },
-  deleteBtn: { backgroundColor: "#dc2626", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  deleteBtnText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center" },
-  modalContent: { backgroundColor: "#1e293b", margin: 20, borderRadius: 12, padding: 20 },
-  modalTitle: { color: "#38bdf8", fontSize: 18, fontWeight: "bold", marginBottom: 12 },
-  settingsCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#334155" },
-  settingsLabel: { color: "#fff", fontSize: 14, marginBottom: 6 },
-  adminCard: { backgroundColor: "#1e293b", borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: "#334155" },
-  approveBtn: { backgroundColor: "#16a34a", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  rejectBtn: { backgroundColor: "#dc2626", padding: 8, borderRadius: 8, flex: 1, alignItems: "center" },
-  actionBtnText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
-  permBtn: { padding: 8, borderRadius: 8, alignItems: "center" },
-  bottomNav: { flexDirection: "row", backgroundColor: "#1e293b", borderTopWidth: 1, borderTopColor: "#334155", paddingVertical: 10 },
-  navItem: { flex: 1, alignItems: "center", paddingVertical: 4 },
-  navItemActive: { borderTopWidth: 2, borderTopColor: "#38bdf8" },
-  navText: { color: "#94a3b8", fontSize: 11 },
-  navTextActive: { color: "#38bdf8", fontWeight: "bold" },
+  card: {
+    backgroundColor: C.card,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  pageTitle: {
+    color: C.white,
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
 });

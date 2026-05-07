@@ -15,7 +15,7 @@ const AdminDashboard = ({ user }) => {
     const fetchData = async () => {
       const prods = await productsAPI.getAll();
       setProducts(prods);
-      const res = await fetch("http://localhost:5000/api/auth/users");
+      const res = await fetch("https://campus-market.fly.dev/api/auth/users");
       const usersData = await res.json();
       setUsers(usersData);
     };
@@ -23,7 +23,7 @@ const AdminDashboard = ({ user }) => {
   }, []);
 
   const onApprove = async (id) => {
-    await fetch(`http://localhost:5000/api/products/status/${id}`, {
+    await fetch(`https://campus-market.fly.dev/api/products/status/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Approved" }),
@@ -32,7 +32,7 @@ const AdminDashboard = ({ user }) => {
   };
 
   const onReject = async (id) => {
-    await fetch(`http://localhost:5000/api/products/status/${id}`, {
+    await fetch(`https://campus-market.fly.dev/api/products/status/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Rejected" }),
@@ -50,7 +50,7 @@ const AdminDashboard = ({ user }) => {
       alert("You cannot change your own permissions!");
       return;
     }
-    const res = await fetch(`http://localhost:5000/api/auth/users/${userId}`, {
+    const res = await fetch(`https://campus-market.fly.dev/api/auth/users/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

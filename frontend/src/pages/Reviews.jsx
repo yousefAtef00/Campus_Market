@@ -13,7 +13,7 @@ function Reviews() {
     setChat(prev => [...prev, { user: userMsg, bot: null }]);
 
     try {
-      const res = await fetch("http://localhost:5000/chat", {
+      const res = await fetch("https://campus-market.fly.dev/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg }),
