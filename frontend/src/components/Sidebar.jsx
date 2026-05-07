@@ -29,20 +29,25 @@ const sidebarStyles = `
     flex: 1;
   }
 
-  .sidebar ul li {
-    width: 100%;
-    padding: 13px 20px;
-    margin-bottom: 10px;
-    background: transparent;
-    border: 1px solid #00abf0;
-    color: #fff;
-    cursor: pointer;
-    border-radius: 40px;
-    transition: 0.3s;
-    font-size: 15px;
-    text-align: center;
-  }
+.sidebar ul li {
+  width: 100%;
+  height: 55px;
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 10px;
+  background: transparent;
+  border: 1px solid #00abf0;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 40px;
+  transition: 0.3s;
+  font-size: 15px;
+
+  box-sizing: border-box;
+}
   .sidebar ul li:hover {
     background: #00abf0;
     box-shadow: 0 0 15px #00abf0;
@@ -106,12 +111,12 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
 
       {/* Logo */}
       <div className="logo">
-        <h1>SWAPSTER</h1>
+        <h1 style={{  fontSize: '1.5rem' }}>SWAPSTER</h1>
       </div>
 
-      {/* Nav Links */}
+    
       <ul>
-        <h1 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>Campus Market</h1>
+        <h1 style={{  marginBottom: '20px', fontSize: '1.5rem' }}></h1>
         <li
           className={currentPage === "dashboard" ? "active-page" : ""}
           onClick={() => setPage("dashboard")}
@@ -131,10 +136,10 @@ function Sidebar({ setPage, user, onLogout, currentPage }) {
           Orders
         </li>
         <li
-          className={currentPage === "messages" ? "active-page" : ""}
-          onClick={() => setPage("messages")}
+          className={currentPage === "Reviews" ? "active-page" : ""}
+          onClick={() => setPage("Reviews")}
         >
-          Messages
+          Reviews
         </li>
         <li
           className={currentPage === "settings" ? "active-page" : ""}
