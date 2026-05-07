@@ -84,7 +84,7 @@ app.use("/api/products", productRoutes);
 const swapRoutes = require("./routes/swapRoute");
 app.use("/api/swaps", swapRoutes);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
